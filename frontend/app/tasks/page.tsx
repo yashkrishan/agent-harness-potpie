@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -66,7 +66,7 @@ interface Phase {
   tasks: Task[];
 }
 
-export default function TasksPage() {
+function TasksPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const projectId = parseInt(searchParams.get("projectId") || "0");
@@ -608,5 +608,20 @@ export default function TasksPage() {
         />
       </div>
     </div>
+  );
+}
+
+export default function TasksPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-screen bg-gray-50 overflow-hidden">
+        <Sidebar />
+        <div className="flex-1 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        </div>
+      </div>
+    }>
+      <TasksPageContent />
+    </Suspense>
   );
 }

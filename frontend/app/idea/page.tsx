@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -29,7 +29,7 @@ import { Card } from "@/components/ui/card";
 import { DotPattern } from "@/components/ui/dot-pattern";
 import { cn } from "@/lib/utils";
 
-export default function IdeaPage() {
+function IdeaPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isDemo = searchParams.get("demo") === "true";
@@ -383,5 +383,20 @@ export default function IdeaPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function IdeaPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-screen bg-gray-50 overflow-hidden">
+        <Sidebar />
+        <div className="flex-1 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        </div>
+      </div>
+    }>
+      <IdeaPageContent />
+    </Suspense>
   );
 }

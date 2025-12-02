@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -62,7 +62,7 @@ interface QuestionAnswer {
 
 type PageState = "generating-plan" | "questions";
 
-export default function RepoPage() {
+function RepoPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const projectId = parseInt(searchParams.get("projectId") || "0");
@@ -1100,5 +1100,20 @@ export default function RepoPage() {
         />
       </div>
     </div>
+  );
+}
+
+export default function RepoPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-screen bg-gray-50 overflow-hidden">
+        <Sidebar />
+        <div className="flex-1 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        </div>
+      </div>
+    }>
+      <RepoPageContent />
+    </Suspense>
   );
 }

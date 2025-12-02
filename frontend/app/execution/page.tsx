@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -289,7 +289,7 @@ const generateTaskLogs = (
   return logs;
 };
 
-export default function ExecutionPage() {
+function ExecutionPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const projectId = parseInt(searchParams.get("projectId") || "0");
@@ -1621,5 +1621,20 @@ export default function ExecutionPage() {
         </Sheet>
       </div>
     </div>
+  );
+}
+
+export default function ExecutionPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-screen bg-gray-50 overflow-hidden">
+        <Sidebar />
+        <div className="flex-1 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        </div>
+      </div>
+    }>
+      <ExecutionPageContent />
+    </Suspense>
   );
 }

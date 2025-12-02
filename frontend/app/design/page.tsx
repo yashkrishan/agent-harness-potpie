@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -54,7 +54,7 @@ interface Phase {
   tasks: any[];
 }
 
-export default function DesignPage() {
+function DesignPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const projectId = parseInt(searchParams.get("projectId") || "0");
@@ -1251,5 +1251,20 @@ export default function DesignPage() {
         onMinimizeChange={setChatbotMinimized}
       />
     </div>
+  );
+}
+
+export default function DesignPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-screen bg-gray-50 overflow-hidden">
+        <Sidebar />
+        <div className="flex-1 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        </div>
+      </div>
+    }>
+      <DesignPageContent />
+    </Suspense>
   );
 }

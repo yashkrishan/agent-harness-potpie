@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,7 +12,7 @@ import { ArrowRight, Play, Loader2, CheckCircle2, Terminal, GitBranch, ExternalL
 import { toast } from "sonner"
 import { Sidebar } from "@/components/sidebar"
 
-export default function TestingPage() {
+function TestingPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const projectId = parseInt(searchParams.get("projectId") || "0")
@@ -266,6 +266,21 @@ export default function TestingPage() {
       </div>
 
     </div>
+  )
+}
+
+export default function TestingPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-screen bg-gray-50 overflow-hidden">
+        <Sidebar />
+        <div className="flex-1 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        </div>
+      </div>
+    }>
+      <TestingPageContent />
+    </Suspense>
   )
 }
 
