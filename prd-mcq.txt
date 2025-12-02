@@ -1,0 +1,214 @@
+A. Business Goals and Scope
+
+1. What is the primary goal of the fraud system?
+A. Reduce chargebacks
+B. Block stolen cards
+C. Prevent promo/refund abuse
+D. Improve approval rates
+E. All of the above
+➡️ Assumed: E (All of the above) — PRD mentions reducing fraud losses + avoiding CX friction.
+
+2. Which fraud metric is most important?
+A. Chargeback rate
+B. Fraud loss amount
+C. Manual review load
+D. Conversion rate impact
+E. All equally important
+➡️ Needs input (priority tradeoff required).
+
+3. What target reduction should we aim for?
+A. 10 percent
+B. 20 percent
+C. 30 percent
+D. No target
+➡️ Needs input — PRD doesn’t specify measurable target.
+
+4. Which payment flows are in scope?
+A. Card-not-present checkout
+B. Saved cards
+C. Subscription renewals
+D. All of the above
+➡️ Assumed: A & B — code shows fraud hooks only in checkout + vault flows.
+
+5. External fraud provider?
+A. Yes – keep
+B. Yes – replace
+C. No, fully in-house
+D. Not sure
+➡️ Assumed: C — no integration code found.
+
+B. Risk Appetite & Decisioning
+
+6. Acceptable false-positive tolerance?
+A. Very low
+B. Medium
+C. High
+D. Not defined
+➡️ Needs input (business tradeoff).
+
+7. What actions should system support?
+A. Hard decline
+B. Step-up verification
+C. Manual review
+D. Order hold
+E. All of the above
+➡️ Assumed: A + B — PRD specifies risk-based 3DS and declines only.
+
+8. Treat user segments differently?
+A. VIPs
+B. Employees
+C. High-risk regions
+D. No
+E. All of the above
+➡️ Assumed: C — Geo-specific rules appear in rule DSL.
+
+9. Use amount thresholds?
+A. Auto-approve small orders
+B. Auto-decline large
+C. Both
+D. None
+➡️ Assumed: C — threshold config present in YAML.
+
+C. User Experience & Flow
+
+10. What should user see for flagged payments?
+A. Generic failure
+B. Verification required
+C. Redirect to support
+D. Silent retry
+➡️ Assumed: A — UI currently displays generic “Payment failed”.
+
+11. Can we trigger 3DS/OTP?
+A. Always
+B. First-time users
+C. High-value orders
+D. Avoid 3DS
+➡️ Assumed: C — high-value + high-risk triggers exist in code.
+
+12. Handling retries?
+A. Unlimited
+B. Limited attempts
+C. Cooldown block
+D. Switch method
+➡️ Assumed: B — retry_count is tracked in Redis with max 3.
+
+13. Preferential treatment for returning customers?
+A. Yes – whitelist
+B. Yes with cap
+C. No
+D. Unsure
+➡️ Assumed: B — rules file has “trusted user – max_amount_per_order = X”.
+
+D. Existing Systems & Data
+
+14. What data is available at checkout?
+A. User only
+B. Device only
+C. Both user + device
+D. Unsure
+➡️ Assumed: C — device fingerprint + user profile available.
+
+15. Where is data stored?
+A. User service
+B. Orders service
+C. Payment gateway
+D. All of the above
+➡️ Assumed: D — code touches all three.
+
+16. Do we have fraud labels?
+A. Yes – full
+B. Partial
+C. None
+D. Not sure
+➡️ Assumed: B — chargeback events exist but incomplete tagging.
+
+17. What event/logging system do we use?
+A. Kafka
+B. Kinesis
+C. Internal bus
+D. Minimal logs
+➡️ Assumed: A (Pre-filled) — Kafka topics found: checkout_attempts, payment_declined, chargeback.
+
+E. Architecture & Performance
+
+18. Latency budget for fraud checks?
+A. 10 ms
+B. 50 ms
+C. 100 ms
+D. No limit
+➡️ Assumed: B — checkout service budgets 50 ms for all fraud logic.
+
+19. Can we call 3rd-party APIs synchronously?
+A. Yes
+B. Yes with timeout
+C. No
+D. Unknown
+➡️ Assumed: C — no external calls allowed in hot path (PRD explicitly prohibits).
+
+20. Engineering environment?
+A. Microservices
+B. Monolith
+C. Hybrid
+D. Undefined
+➡️ Assumed: A — fraud is a separate microservice.
+
+21. Existing rule engine?
+A. Yes – reuse
+B. Yes – outdated
+C. No
+D. Unsure
+➡️ Assumed: A — rules DSL under /fraud-rules/ directory.
+
+F. Operations & Ownership
+
+22. Who tunes the rules?
+A. Risk team
+B. Data science
+C. Engineering
+D. Combination
+➡️ Assumed: D — PRD says “risk defines, engineering deploys”.
+
+23. Manual review team exists?
+A. Yes – large
+B. Small team
+C. None
+D. Planned
+➡️ Assumed: C — PRD explicitly: “no manual review in v1”.
+
+24. Rule update frequency?
+A. Daily
+B. Weekly
+C. Monthly
+D. Ad-hoc
+➡️ Assumed: D — updates occur when fraud loss spikes.
+
+25. Who handles anomalies?
+A. On-call eng
+B. Fraud ops
+C. Shared
+D. None
+➡️ Assumed: A — on-call runbook mentions fraud misfires.
+
+G. Compliance & Privacy
+
+26. Regional data restrictions?
+A. Yes – EU/UK
+B. APAC/GCC
+C. No restrictions
+D. Not sure
+➡️ Assumed: A — PRD notes GDPR constraints on device fingerprint retention.
+
+27. Card-network requirements?
+A. PCI DSS
+B. Issuer logging requirements
+C. Both
+D. None
+E. Not sure
+➡️ Assumed: C — PCI scope clearly defined.
+
+28. Need to explain decline reasons to users?
+A. Yes – detail
+B. Yes – high-level
+C. No
+D. Not sure
+➡️ Assumed: B — PRD: “generic messaging only”.
