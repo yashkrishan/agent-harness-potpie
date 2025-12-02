@@ -8,6 +8,12 @@ load_dotenv()
 
 app = FastAPI(title="Developer Build Agent API")
 
+# Initialize database on startup
+@app.on_event("startup")
+async def startup_event():
+    from database import init_db
+    init_db()
+
 # Get CORS origins from environment variable, default to localhost:3000
 cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
 # Strip whitespace from each origin
