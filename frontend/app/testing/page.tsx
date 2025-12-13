@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, Suspense } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -26,13 +26,30 @@ function TestingPageContent() {
   const [creatingPR, setCreatingPR] = useState(false)
   const [prCreated, setPrCreated] = useState(false)
   const [prUrl, setPrUrl] = useState("")
+  const [loadingLogs, setLoadingLogs] = useState(false)
+
+  useEffect(() => {
+    if (projectId > 0) {
+      loadTestLogs()
+    }
+  }, [projectId])
 
   const loadTestLogs = async () => {
+    if (loadingLogs) return
+    setLoadingLogs(true)
     try {
       const result = await getTestLogs(projectId)
-      setTestLogs(result.logs)
+      console.log("Test logs loaded:", result)
+      if (result && result.logs) {
+        setTestLogs(result.logs)
+      } else {
+        setTestLogs([])
+      }
     } catch (error) {
       console.error("Failed to load test logs:", error)
+      setTestLogs([])
+    } finally {
+      setLoadingLogs(false)
     }
   }
 
@@ -44,9 +61,14 @@ function TestingPageContent() {
       const cmd = parts[0]
       const args = parts.slice(1)
       const result = await runTestCommand(projectId, cmd, args)
+      console.log("Test command result:", result)
       setTestOutput(result)
-      loadTestLogs()
+      // Wait a bit for logs to be saved, then reload
+      setTimeout(() => {
+        loadTestLogs()
+      }, 500)
     } catch (error: any) {
+      console.error("Test command error:", error)
       setTestOutput({
         stdout: "",
         stderr: error.message || "Failed to run command",
@@ -77,9 +99,11 @@ function TestingPageContent() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden bg-white">
         {/* Header */}
-        <div className="border-b border-gray-200 bg-white px-6 py-4">
-          <h1 className="text-lg font-semibold text-gray-900">Testing & Validation</h1>
-          <p className="text-sm text-gray-600">Test your implementation and create a pull request</p>
+        <div className="border-b border-gray-200 bg-white px-8 py-4 h-[73px]">
+          <div className="flex flex-col justify-center h-full">
+            <h1 className="text-xl font-semibold text-gray-900">Testing & Validation</h1>
+            <p className="text-sm text-gray-600 mt-1">Test your implementation and create a pull request</p>
+          </div>
         </div>
 
         {/* Content */}
@@ -87,9 +111,9 @@ function TestingPageContent() {
           <div className="max-w-7xl mx-auto">
             <Card className="border border-gray-200 bg-white shadow-sm">
               <CardContent className="p-4">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 items-start">
               {/* Left: Test Commands */}
-              <div className="space-y-3">
+              <div className="space-y-3 flex flex-col h-full">
                 <div className="p-3 rounded-lg bg-gray-50 border border-gray-200">
                   <Label htmlFor="command" className="text-sm font-semibold mb-2 block text-gray-900">Test Command</Label>
                   <div className="flex gap-2">
@@ -229,29 +253,44 @@ function TestingPageContent() {
               </div>
 
               {/* Right: Test Logs */}
-              <div>
+              <div className="flex flex-col h-full">
                 <h3 className="font-semibold text-sm mb-3 flex items-center gap-2 text-gray-900">
-                  <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                  {loadingLogs ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                  ) : (
+                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                  )}
                   <Terminal className="h-4 w-4 text-primary" />
                   Test Logs
+                  {testLogs.length > 0 && (
+                    <span className="ml-auto text-xs text-gray-500 font-normal">
+                      {testLogs.length} log{testLogs.length !== 1 ? 's' : ''}
+                    </span>
+                  )}
                 </h3>
-                <div className="border border-gray-200 rounded-lg p-3 h-[500px] overflow-y-auto bg-gray-50">
-                  {testLogs.length === 0 ? (
+                <div className="border border-gray-200 rounded-lg p-3 min-h-[500px] overflow-y-auto bg-gray-50 flex-1">
+                  {loadingLogs ? (
+                    <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                      <Loader2 className="h-12 w-12 mb-3 animate-spin text-primary" />
+                      <p className="text-sm">Loading test logs...</p>
+                    </div>
+                  ) : testLogs.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-gray-500">
                       <Terminal className="h-12 w-12 mb-3 opacity-50" />
-                      <p className="text-sm">No test logs yet</p>
+                      <p className="text-sm font-medium">No test logs yet</p>
+                      <p className="text-xs mt-1 text-gray-400">Run a test command to see logs here</p>
                     </div>
                   ) : (
                     <div className="space-y-2 font-mono text-xs">
                       {testLogs.map((log, idx) => (
                         <div 
-                          key={log.id} 
-                          className="p-2 bg-white rounded-md border border-gray-200"
+                          key={log.id || idx} 
+                          className="p-2 bg-white rounded-md border border-gray-200 hover:border-blue-300 transition-colors"
                         >
                           <div className="text-[10px] text-gray-500 mb-1.5 font-medium">
-                            {new Date(log.created_at).toLocaleString()}
+                            {log.created_at ? new Date(log.created_at).toLocaleString() : 'Recent'}
                           </div>
-                          <pre className="whitespace-pre-wrap text-xs leading-relaxed text-gray-900">{log.content}</pre>
+                          <pre className="whitespace-pre-wrap text-xs leading-relaxed text-gray-900">{log.content || log.message || JSON.stringify(log)}</pre>
                         </div>
                       ))}
                     </div>

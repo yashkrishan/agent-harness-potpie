@@ -316,34 +316,36 @@ function PlanPageContent() {
           }}
         >
           {/* Header */}
-          <div className="border-b border-gray-200 bg-white px-4 py-2.5">
-            <h1 className="text-base font-semibold text-gray-900">
-              Implementation Plan
-            </h1>
-            <p className="text-xs text-gray-600">
-              Review and refine the AI-generated questions
-            </p>
+          <div className="border-b border-gray-200 bg-white px-8 py-4 h-[73px]">
+            <div className="flex flex-col justify-center h-full">
+              <h1 className="text-xl font-semibold text-gray-900">
+                Implementation Plan
+              </h1>
+              <p className="text-sm text-gray-600 mt-1">
+                Review and refine the AI-generated questions
+              </p>
+            </div>
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto px-4 py-4">
-            <div className="max-w-6xl mx-auto">
+          <div className="flex-1 overflow-y-auto px-8 py-6">
+            <div className="max-w-7xl mx-auto">
               {/* Grid Layout for Questions */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {/* Header - Full Width */}
-                <div className="col-span-full mb-2">
+                <div className="col-span-full mb-4">
                   <Card className="border border-primary/20 bg-gradient-to-br from-card to-card/50">
-                    <CardHeader className="pb-2 px-3 pt-2.5">
+                    <CardHeader className="pb-4 px-6 pt-5">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="p-1 rounded-lg bg-primary/10">
-                            <Bot className="h-4 w-4 text-primary" />
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-primary/10">
+                            <Bot className="h-5 w-5 text-primary" />
                           </div>
                           <div>
-                            <CardTitle className="text-sm">
+                            <CardTitle className="text-base">
                               AI Agent Analysis
                             </CardTitle>
-                            <CardDescription className="text-[10px]">
+                            <CardDescription className="text-sm mt-1">
                               {isGenerating
                                 ? "Generating questions..."
                                 : "Review and edit the AI agent's assumptions"}
@@ -351,7 +353,7 @@ function PlanPageContent() {
                           </div>
                         </div>
                         {isGenerating && (
-                          <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                          <Loader2 className="h-5 w-5 animate-spin text-primary" />
                         )}
                       </div>
                     </CardHeader>
@@ -524,29 +526,28 @@ function PlanPageContent() {
                 )}
 
                 {/* Additional Context & Done Button - Full Width */}
-                <div className="col-span-full mt-2">
+                <div className="col-span-full mt-6">
                   <Card className="border border-primary/20">
-                    <CardHeader className="pb-2 px-3 pt-2.5">
-                      <CardTitle className="text-sm">
+                    <CardHeader className="pb-4">
+                      <CardTitle className="text-base">
                         Additional Context
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-2 px-3 pb-3">
+                    <CardContent className="space-y-4">
                       <Textarea
                         placeholder="Add any additional context..."
                         value={additionalContext}
                         onChange={(e) => setAdditionalContext(e.target.value)}
-                        className="min-h-[60px] text-xs resize-none"
+                        className="min-h-[80px] text-sm resize-none"
                       />
                       <Button
                         onClick={handleDone}
                         disabled={isGenerating}
-                        className="w-full bg-black hover:bg-black/90"
-                        size="sm"
+                        className="w-full bg-black hover:bg-black/90 h-11"
                       >
-                        <CheckCircle2 className="h-3 w-3 mr-1.5" />
+                        <CheckCircle2 className="h-4 w-4 mr-2" />
                         Done - Generate Plan
-                        <ArrowRight className="h-3 w-3 ml-1.5" />
+                        <ArrowRight className="h-4 w-4 ml-2" />
                       </Button>
                     </CardContent>
                   </Card>

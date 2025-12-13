@@ -1,12 +1,13 @@
 import type { Metadata } from "next"
-import { Source_Sans_3 } from "next/font/google"
+import { Inter } from "next/font/google"
 import "./globals.css"
 import { Toaster } from "@/components/ui/sonner"
 
-const sourceSans = Source_Sans_3({
+const inter = Inter({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-source-sans",
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-inter",
+  display: "swap",
 })
 
 export const metadata: Metadata = {
@@ -26,7 +27,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={sourceSans.variable}>
+      <body className={inter.variable}>
         {children}
         <Toaster />
       </body>

@@ -43,23 +43,23 @@ export default function Home() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
-        <div className="border-b border-gray-200 bg-white px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex-1 max-w-md">
+        <div className="border-b border-gray-200 bg-white px-8 py-4 h-[73px]">
+          <div className="flex items-center justify-between h-full">
+            <div className="flex-1 max-w-xl">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   type="text"
                   placeholder="Search builds..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 bg-gray-50 border-gray-200 focus:bg-white"
+                  className="pl-11 h-11 bg-gray-50 border-gray-200 focus:bg-white text-sm"
                 />
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <Button
-                className="bg-black hover:bg-black/90 text-white"
+                className="bg-black hover:bg-black/90 text-white h-11"
                 onClick={() => router.push("/idea")}
               >
                 <Zap className="h-4 w-4 mr-2" />
@@ -71,13 +71,13 @@ export default function Home() {
 
         {/* Main Content Area */}
         <div className="flex-1 overflow-y-auto bg-gray-50">
-          <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="max-w-7xl mx-auto px-8 py-8">
             {/* Welcome Section */}
-            <div className="mb-8">
-              <h1 className="text-2xl font-semibold text-gray-900 mb-1">
+            <div className="mb-10">
+              <h1 className="text-3xl font-semibold text-gray-900 mb-2">
                 Builds
               </h1>
-              <p className="text-sm text-gray-600">
+              <p className="text-base text-gray-600">
                 Create and manage your AI-powered development builds
               </p>
             </div>
@@ -85,14 +85,14 @@ export default function Home() {
             {/* Action Cards */}
             <div className="grid md:grid-cols-3 gap-6 mb-8">
               <Card
-                className="group cursor-pointer border border-gray-200 hover:border-blue-400 hover:shadow-md transition-all duration-200 bg-white"
+                className="group cursor-pointer border border-gray-200 hover:border-blue-500 hover:shadow-lg transition-all duration-200 bg-white"
                 onClick={() => handleGoalSelect("feature")}
               >
-                <CardHeader className="space-y-3 pb-4">
-                  <div className="p-2.5 rounded-lg bg-blue-50 w-fit group-hover:bg-blue-100 transition-colors">
-                    <Sparkles className="h-5 w-5 text-blue-600" />
+                <CardHeader className="space-y-4 pb-4">
+                  <div className="p-3 rounded-xl bg-blue-50 w-fit group-hover:bg-blue-100 transition-colors">
+                    <Sparkles className="h-6 w-6 text-blue-600" />
                   </div>
-                  <CardTitle className="text-lg font-semibold text-gray-900">
+                  <CardTitle className="text-xl font-semibold text-gray-900">
                     Build a Feature
                   </CardTitle>
                   <CardDescription className="text-sm text-gray-600 leading-relaxed">
@@ -102,22 +102,22 @@ export default function Home() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
-                    <Code className="h-3.5 w-3.5" />
+                  <div className="flex items-center gap-2 text-sm text-gray-500 font-medium">
+                    <Code className="h-4 w-4" />
                     <span>Full-stack implementation</span>
                   </div>
                 </CardContent>
               </Card>
 
               <Card
-                className="group cursor-pointer border border-gray-200 hover:border-blue-400 hover:shadow-md transition-all duration-200 bg-white"
+                className="group cursor-pointer border border-gray-200 hover:border-blue-500 hover:shadow-lg transition-all duration-200 bg-white"
                 onClick={() => handleGoalSelect("workflow")}
               >
-                <CardHeader className="space-y-3 pb-4">
-                  <div className="p-2.5 rounded-lg bg-blue-50 w-fit group-hover:bg-blue-100 transition-colors">
-                    <Workflow className="h-5 w-5 text-blue-600" />
+                <CardHeader className="space-y-4 pb-4">
+                  <div className="p-3 rounded-xl bg-blue-50 w-fit group-hover:bg-blue-100 transition-colors">
+                    <Workflow className="h-6 w-6 text-blue-600" />
                   </div>
-                  <CardTitle className="text-lg font-semibold text-gray-900">
+                  <CardTitle className="text-xl font-semibold text-gray-900">
                     Build a Workflow
                   </CardTitle>
                   <CardDescription className="text-sm text-gray-600 leading-relaxed">
@@ -126,23 +126,23 @@ export default function Home() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
-                    <Rocket className="h-3.5 w-3.5" />
+                  <div className="flex items-center gap-2 text-sm text-gray-500 font-medium">
+                    <Rocket className="h-4 w-4" />
                     <span>Automation & integration</span>
                   </div>
                 </CardContent>
               </Card>
 
               <Card
-                className="group cursor-pointer border border-gray-200 hover:border-blue-400 hover:shadow-md transition-all duration-200 bg-white"
+                className="group cursor-pointer border border-gray-200 hover:border-blue-500 hover:shadow-lg transition-all duration-200 bg-white"
                 onClick={() => handleGoalSelect("demo")}
               >
-                <CardHeader className="space-y-3 pb-4">
-                  <div className="p-2.5 rounded-lg bg-blue-50 w-fit group-hover:bg-blue-100 transition-colors">
-                    <Play className="h-5 w-5 text-blue-600" />
+                <CardHeader className="space-y-4 pb-4">
+                  <div className="p-3 rounded-xl bg-blue-50 w-fit group-hover:bg-blue-100 transition-colors">
+                    <Play className="h-6 w-6 text-blue-600" />
                   </div>
-                  <CardTitle className="text-lg font-semibold text-gray-900">
-                    See a Demo
+                  <CardTitle className="text-xl font-semibold text-gray-900">
+                    Debug an Error
                   </CardTitle>
                   <CardDescription className="text-sm text-gray-600 leading-relaxed">
                     Explore the tool with a pre-configured fraud detection
@@ -150,9 +150,9 @@ export default function Home() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
-                    <Zap className="h-3.5 w-3.5" />
-                    <span>Interactive walkthrough</span>
+                  <div className="flex items-center gap-2 text-sm text-gray-500 font-medium">
+                    <Zap className="h-4 w-4" />
+                    <span>Demo mode</span>
                   </div>
                 </CardContent>
               </Card>

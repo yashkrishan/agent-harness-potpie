@@ -172,18 +172,18 @@ function IdeaPageContent() {
             </div>
           </div>
           <div className="w-full max-w-2xl space-y-4 relative z-10">
-            <div className="flex flex-col items-center mb-8">
-              <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4">
+            <div className="flex flex-col items-center mb-10">
+              <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6">
                 <Image
                   src="/logo-no-text.png"
                   alt="potpie.ai"
                   width={24}
                   height={24}
-                  className="w-12 h-12 object-contain"
+                  className="w-16 h-16 object-contain"
                   priority
                 />
               </div>
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h2 className="text-2xl font-semibold text-gray-900">
                 Let's cook some ideas!
               </h2>
             </div>
@@ -191,14 +191,14 @@ function IdeaPageContent() {
             {/* Input Area */}
             <Card className="relative bg-gray-100 rounded-2xl border border-gray-200 shadow-lg">
               {selectedRepo && selectedRepo !== "connect-repo" && (
-                <div className="px-4 pt-3 pb-2">
-                  <div className="flex items-center gap-2">
+                <div className="px-5 pt-4 pb-3">
+                  <div className="flex items-center gap-3">
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-7 px-3 rounded-full border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"
+                      className="h-8 px-4 rounded-full border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium"
                     >
-                      <Github className="h-3.5 w-3.5 mr-1.5" />
+                      <Github className="h-4 w-4 mr-2" />
                       {linkedRepos.find((r) => r.id === selectedRepo)?.name ||
                         "Repository"}
                     </Button>
@@ -206,7 +206,7 @@ function IdeaPageContent() {
                       variant="ghost"
                       size="sm"
                       onClick={() => setSelectedRepo("")}
-                      className="h-7 px-2 text-gray-500 hover:text-gray-700"
+                      className="h-8 px-3 text-gray-500 hover:text-gray-700"
                     >
                       Change
                     </Button>
@@ -237,18 +237,18 @@ function IdeaPageContent() {
                   }
                 }}
                 disabled={parsing}
-                className="w-full min-h-[120px] max-h-[300px] resize-none bg-transparent border-0 focus:ring-0 focus-visible:ring-0 px-4 pt-4 pb-16 text-gray-900 placeholder:text-gray-500 disabled:opacity-50"
+                className="w-full min-h-[140px] max-h-[300px] resize-none bg-transparent border-0 focus:ring-0 focus-visible:ring-0 px-5 pt-5 pb-20 text-base text-gray-900 placeholder:text-gray-500 disabled:opacity-50"
                 rows={4}
               />
-              <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
-                <div className="flex items-center gap-2">
+              <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
                   {selectedRepo && selectedRepo !== "connect-repo" ? (
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-8 px-3 rounded-full border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"
+                      className="h-9 px-4 rounded-full border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium"
                     >
-                      <Github className="h-4 w-4 mr-1.5" />
+                      <Github className="h-4 w-4 mr-2" />
                       {linkedRepos.find((r) => r.id === selectedRepo)?.name ||
                         "Repository"}
                     </Button>
@@ -264,8 +264,8 @@ function IdeaPageContent() {
                       }}
                       disabled={loading || parsing}
                     >
-                      <SelectTrigger className="h-8 px-3 rounded-full bg-white border-gray-300 hover:bg-gray-50 text-sm">
-                        <Github className="h-4 w-4 mr-1.5" />
+                      <SelectTrigger className="h-9 px-4 rounded-full bg-white border-gray-300 hover:bg-gray-50 text-sm font-medium">
+                        <Github className="h-4 w-4 mr-2" />
                         <SelectValue placeholder="Select repo" />
                       </SelectTrigger>
                       <SelectContent>
@@ -297,26 +297,26 @@ function IdeaPageContent() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 rounded-full hover:bg-gray-200"
+                        className="h-9 w-9 rounded-full hover:bg-gray-200"
                       >
                         <Plus className="h-4 w-4 text-gray-600" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 px-3 rounded-full hover:bg-gray-200 text-gray-600"
+                        className="h-9 px-4 rounded-full hover:bg-gray-200 text-gray-600 font-medium"
                       >
-                        <Paperclip className="h-4 w-4 mr-1.5" />
+                        <Paperclip className="h-4 w-4 mr-2" />
                         Attach
                       </Button>
                     </>
                   )}
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 rounded-full hover:bg-gray-200"
+                    className="h-9 w-9 rounded-full hover:bg-gray-200"
                   >
                     <Mic className="h-4 w-4 text-gray-600" />
                   </Button>
@@ -338,7 +338,7 @@ function IdeaPageContent() {
                       )
                     }
                     size="icon"
-                    className="h-8 w-8 rounded-full bg-black hover:bg-black/90 text-white disabled:opacity-50"
+                    className="h-10 w-10 rounded-full bg-black hover:bg-black/90 text-white disabled:opacity-50 shadow-md"
                   >
                     {loading ? (
                       <Loader2 className="h-4 w-4 animate-spin" />

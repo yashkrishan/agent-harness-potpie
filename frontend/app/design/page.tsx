@@ -369,13 +369,13 @@ function DesignPageContent() {
           }}
         >
           {/* Header */}
-          <div className="border-b border-gray-200 bg-white px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-lg font-semibold text-gray-900">
+          <div className="border-b border-gray-200 bg-white px-8 py-4 h-[73px]">
+            <div className="flex items-center justify-between h-full">
+              <div className="flex flex-col justify-center">
+                <h1 className="text-xl font-semibold text-gray-900">
                   System Design
                 </h1>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 mt-1">
                   Review and refine the system architecture
                 </p>
               </div>
@@ -383,14 +383,14 @@ function DesignPageContent() {
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-hidden flex flex-col p-4 gap-4">
+          <div className="flex-1 overflow-hidden flex flex-col p-6 gap-6">
             {/* Phases Carousel */}
-            <div className="w-full flex-shrink-0 bg-white border border-gray-200 rounded-lg p-2 shadow-sm">
-              <div className="flex items-center gap-2 mb-2 pb-2 border-b border-gray-200">
-                <div className="w-6 h-6 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-                  <Network className="h-4 w-4 text-blue-600" />
+            <div className="w-full flex-shrink-0 bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+              <div className="flex items-center gap-3 mb-4 pb-3 border-b border-gray-200">
+                <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                  <Network className="h-5 w-5 text-blue-600" />
                 </div>
-                <span className="font-semibold text-xs text-gray-900">
+                <span className="font-semibold text-sm text-gray-900">
                   Phases
                 </span>
               </div>
@@ -414,7 +414,7 @@ function DesignPageContent() {
                           <div
                             className={`relative p-2 rounded-md border cursor-pointer transition-all duration-300 bg-white ${
                               selectedPhaseId === phase.id
-                                ? "border-blue-500 bg-blue-50 shadow-sm scale-[1.02] ring-1 ring-blue-200"
+                                ? "border-blue-500 bg-blue-50 shadow-md"
                                 : "border-gray-200 hover:border-blue-300 hover:bg-gray-50"
                             }`}
                             onClick={() => {
@@ -423,23 +423,12 @@ function DesignPageContent() {
                             }}
                           >
                             <div className="flex items-start gap-1.5">
-                              {/* Phase Number Badge */}
-                              <div className="flex-shrink-0 w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-[10px] shadow-sm">
-                                {idx + 1}
-                              </div>
-                              
                               <div className="flex-1 min-w-0">
-                                {/* Selected Indicator */}
-                                {selectedPhaseId === phase.id && (
-                                  <div className="flex items-center justify-end mb-0.5">
-                                    <div className="w-3.5 h-3.5 rounded-full bg-blue-600 flex items-center justify-center">
-                                      <CheckCircle2 className="h-2 w-2 text-white" />
-                                    </div>
-                                  </div>
-                                )}
-                                
+                                <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                                  Phase {idx + 1}
+                                </div>
                                 <h4 className="font-semibold text-xs text-gray-900 mb-0.5 line-clamp-1 leading-tight">
-                                  {phase.name}
+                                  {phase.name.replace(/^Phase \d+:\s*/i, '')}
                                 </h4>
                                 <p className="text-[10px] text-gray-600 mb-1 leading-tight line-clamp-1">
                                   {phase.description}
@@ -1214,12 +1203,12 @@ function DesignPageContent() {
 
               {/* Sticky Start Execution Button */}
               {selectedPhaseId && (
-                <div className="border-t border-gray-200 bg-white px-4 py-4 sticky bottom-0 z-10 flex-shrink-0">
+                <div className="border-t border-gray-200 bg-white px-6 py-5 sticky bottom-0 z-10 flex-shrink-0">
                   <Button
                     onClick={() =>
                       router.push(`/execution?projectId=${projectId}`)
                     }
-                    className="w-full bg-black hover:bg-black/90"
+                    className="w-full bg-black hover:bg-black/90 h-12 text-base"
                     size="lg"
                   >
                     Start Execution

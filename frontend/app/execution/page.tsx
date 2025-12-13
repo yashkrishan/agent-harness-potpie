@@ -1032,11 +1032,11 @@ function ExecutionPageContent() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden bg-white">
         {/* Header */}
-        <div className="border-b border-gray-200 bg-white px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-lg font-semibold text-gray-900">Execution</h1>
-              <p className="text-sm text-gray-600">
+        <div className="border-b border-gray-200 bg-white px-8 py-4 h-[73px]">
+          <div className="flex items-center justify-between h-full">
+            <div className="flex flex-col justify-center">
+              <h1 className="text-xl font-semibold text-gray-900">Execution</h1>
+              <p className="text-sm text-gray-600 mt-1">
                 Monitor task execution and code changes
               </p>
             </div>

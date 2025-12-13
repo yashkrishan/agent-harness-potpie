@@ -168,7 +168,7 @@ export function MonacoDiff({
         modified={after || ""}
         theme="vs-dark"
         options={{
-          readOnly: true,
+          readOnly: false,
           automaticLayout: true,
           scrollBeyondLastLine: false,
           minimap: {

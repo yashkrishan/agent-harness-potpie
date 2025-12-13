@@ -147,21 +147,21 @@ export function Chatbot({
   return (
     <div className="absolute right-0 top-0 h-full w-[400px] bg-white border-l border-gray-200 shadow-2xl z-40 flex flex-col transition-all duration-300">
       {/* Header */}
-      <div className="border-b border-gray-200 bg-white px-4 py-3.5 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center">
-            <Bot className="h-4 w-4 text-white" />
+      <div className="border-b border-gray-200 bg-white px-6 py-4 h-[73px] flex items-center justify-between shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-full bg-black flex items-center justify-center">
+            <Bot className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h3 className="font-semibold text-sm text-gray-900">AI Assistant</h3>
-            <p className="text-xs text-gray-500">Ask me anything</p>
+            <h3 className="font-semibold text-base text-gray-900">AI Assistant</h3>
+            <p className="text-sm text-gray-500">Ask me anything</p>
           </div>
         </div>
         <div className="flex items-center gap-1">
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 hover:bg-gray-100"
+            className="h-9 w-9 hover:bg-gray-100"
             onClick={() => handleMinimize(true)}
           >
             <Minimize2 className="h-4 w-4 text-gray-600" />

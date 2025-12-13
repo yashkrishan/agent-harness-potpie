@@ -573,20 +573,22 @@ function RepoPageContent() {
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col overflow-hidden" style={{ marginRight: chatbotMinimized ? '0' : '400px', transition: 'margin-right 0.3s ease' }}>
         {/* Header */}
-        <div className="border-b border-gray-200 bg-white px-4 py-2.5">
-          <h1 className="text-base font-semibold text-gray-900">
-            Implementation Plan
-          </h1>
-          <p className="text-xs text-gray-600">
-            Review and refine the AI-generated questions
-          </p>
+        <div className="border-b border-gray-200 bg-white px-8 py-4 h-[73px]">
+          <div className="flex flex-col justify-center h-full">
+            <h1 className="text-xl font-semibold text-gray-900">
+              Implementation Plan
+            </h1>
+            <p className="text-sm text-gray-600 mt-1">
+              Review and refine the AI-generated questions
+            </p>
+          </div>
         </div>
 
         {/* Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Scrollable Questions Area */}
-          <div className="flex-1 overflow-y-auto px-4 py-4">
-            <div className="max-w-5xl mx-auto space-y-2">
+          <div className="flex-1 overflow-y-auto px-6 py-4">
+            <div className="max-w-5xl mx-auto space-y-3">
             {/* Question Generation Status */}
             {(pageState === "generating-plan" || pageState === "questions") && (
               <Card className="border border-gray-200 bg-white shadow-sm">
@@ -642,15 +644,17 @@ function RepoPageContent() {
             {pageState === "questions" && (
               <>
                 {/* Agent Thinking Banner */}
-                <Card className="border border-primary/20 bg-gradient-to-br from-primary/10 to-primary/5">
-                  <CardContent className="p-2.5">
-                    <div className="flex items-start gap-2">
-                      <Sparkles className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                <Card className="border border-primary/20 bg-gradient-to-br from-primary/10 to-primary/5 shadow-sm">
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-2.5">
+                      <div className="p-1.5 rounded-lg bg-primary/20">
+                        <Sparkles className="h-4 w-4 text-primary flex-shrink-0" />
+                      </div>
                       <div className="flex-1">
-                        <p className="text-xs font-semibold text-primary mb-0.5">
+                        <p className="text-sm font-semibold text-primary mb-1">
                           AI Agent Analysis
                         </p>
-                        <p className="text-[10px] text-muted-foreground line-clamp-2">
+                        <p className="text-xs text-muted-foreground leading-relaxed">
                           The AI agent has analyzed your requirements and made
                           assumptions for each question. Hover over any question
                           to edit. Questions marked with "Needs input" require
@@ -662,20 +666,20 @@ function RepoPageContent() {
                 </Card>
 
                 {/* Questions by Section */}
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {Array.from(sections.entries()).map(
                     ([sectionName, sectionQuestions]) => (
                       <Card
                         key={sectionName}
-                        className="border border-primary/20 bg-gradient-to-br from-card to-card/50"
+                        className="border border-primary/20 bg-gradient-to-br from-card to-card/50 shadow-sm"
                       >
-                        <CardHeader className="pb-2 px-3 pt-2.5">
-                          <CardTitle className="text-sm flex items-center gap-1.5">
-                            <div className="w-0.5 h-4 bg-primary rounded-full" />
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm flex items-center gap-2">
+                            <div className="w-1 h-4 bg-primary rounded-full" />
                             {sectionName}
                           </CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-2 px-3 pb-3">
+                        <CardContent className="space-y-2.5">
                           {sectionQuestions.map((question) => {
                             if (!visibleQuestions.has(question.id)) {
                               return null;
@@ -699,7 +703,7 @@ function RepoPageContent() {
                                   setHoveredQuestion(question.id)
                                 }
                                 onMouseLeave={() => setHoveredQuestion(null)}
-                                className={`p-2.5 rounded-lg border transition-all animate-in slide-in-from-bottom fade-in duration-300 ${
+                                className={`p-3 rounded-lg border transition-all animate-in slide-in-from-bottom fade-in duration-300 ${
                                   answer.isUserModified
                                     ? "bg-blue-500/5 border-blue-500/30"
                                     : isAgentAssumed
@@ -707,24 +711,24 @@ function RepoPageContent() {
                                     : "bg-muted/30 border-border/50"
                                 } ${isHovered ? "shadow-md" : ""}`}
                               >
-                                <div className="flex items-start justify-between gap-1.5 mb-1.5">
+                                <div className="flex items-start justify-between gap-2 mb-2">
                                   <div className="flex-1">
-                                    <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                                      <h3 className="font-medium text-xs text-foreground leading-tight">
+                                    <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
+                                      <h3 className="font-medium text-sm text-foreground leading-tight">
                                         {question.question}
                                       </h3>
                                       {isAgentAssumed && (
-                                        <span className="px-1 py-0.5 text-[10px] rounded-full bg-primary/20 text-primary border border-primary/30 whitespace-nowrap">
+                                        <span className="px-1.5 py-0.5 text-xs rounded-full bg-primary/20 text-primary border border-primary/30 whitespace-nowrap font-medium">
                                           AI
                                         </span>
                                       )}
                                       {answer.isUserModified && (
-                                        <span className="px-1 py-0.5 text-[10px] rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 whitespace-nowrap">
+                                        <span className="px-1.5 py-0.5 text-xs rounded-full bg-blue-500/20 text-blue-600 border border-blue-500/30 whitespace-nowrap font-medium">
                                           Edited
                                         </span>
                                       )}
                                       {question.needsInput && (
-                                        <span className="px-1 py-0.5 text-[10px] rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 whitespace-nowrap">
+                                        <span className="px-1.5 py-0.5 text-xs rounded-full bg-yellow-500/20 text-yellow-600 border border-yellow-500/30 whitespace-nowrap font-medium">
                                           Input
                                         </span>
                                       )}
@@ -732,8 +736,8 @@ function RepoPageContent() {
 
                                     {/* Agent Reasoning - Truncated */}
                                     {question.reasoning && (
-                                      <p className="text-[10px] text-muted-foreground mb-1 line-clamp-1">
-                                        <Bot className="h-2.5 w-2.5 inline mr-0.5 text-primary" />
+                                      <p className="text-xs text-muted-foreground line-clamp-1 leading-relaxed">
+                                        <Bot className="h-3 w-3 inline mr-0.5 text-primary" />
                                         {question.reasoning}
                                       </p>
                                     )}
@@ -743,19 +747,19 @@ function RepoPageContent() {
                                       variant="ghost"
                                       size="sm"
                                       onClick={() => toggleEdit(question.id)}
-                                      className="flex-shrink-0 h-6 w-6 p-0 animate-in fade-in slide-in-from-right"
+                                      className="flex-shrink-0 h-7 w-7 p-0 animate-in fade-in slide-in-from-right"
                                     >
-                                      <Edit2 className="h-2.5 w-2.5" />
+                                      <Edit2 className="h-3 w-3" />
                                     </Button>
                                   )}
                                 </div>
 
                                 {/* Answer Display/Edit */}
                                 {answer.isEditing ? (
-                                  <div className="space-y-1.5 mt-1.5">
-                                    <div className="space-y-1">
-                                      <Label className="text-xs font-medium flex items-center gap-1">
-                                        <Bot className="h-3 w-3" />
+                                  <div className="space-y-2">
+                                    <div className="space-y-1.5">
+                                      <Label className="text-xs font-semibold flex items-center gap-1.5">
+                                        <Bot className="h-3.5 w-3.5" />
                                         Your Answer
                                       </Label>
                                       <Textarea
@@ -767,13 +771,13 @@ function RepoPageContent() {
                                             e.target.value
                                           )
                                         }
-                                        className="min-h-[50px] text-xs resize-none"
+                                        className="min-h-[60px] text-sm resize-none"
                                       />
                                     </div>
 
                                     {question.options.length > 0 && (
-                                      <div className="space-y-1">
-                                        <Label className="text-xs font-medium">
+                                      <div className="space-y-1.5">
+                                        <Label className="text-xs font-semibold">
                                           Or select an option:
                                         </Label>
                                         <RadioGroup
@@ -784,7 +788,7 @@ function RepoPageContent() {
                                               value
                                             )
                                           }
-                                          className="space-y-0.5"
+                                          className="space-y-1.5"
                                         >
                                           {question.options.map(
                                             (option, idx) => {
@@ -793,10 +797,10 @@ function RepoPageContent() {
                                               return (
                                                 <div
                                                   key={idx}
-                                                  className={`flex items-center space-x-1.5 p-1.5 rounded border text-[10px] transition-all cursor-pointer ${
+                                                  className={`flex items-center space-x-2 p-2 rounded-md border text-xs transition-all cursor-pointer ${
                                                     answer.mcqAnswer ===
                                                     optionLabel
-                                                      ? "bg-blue-500/20 border-blue-500/50"
+                                                      ? "bg-blue-500/20 border-blue-500/50 shadow-sm"
                                                       : "bg-muted/30 border-border/50 hover:bg-muted/50 hover:border-blue-500/30"
                                                   }`}
                                                   onClick={() =>
@@ -809,13 +813,13 @@ function RepoPageContent() {
                                                   <RadioGroupItem
                                                     value={optionLabel}
                                                     id={`${question.id}-option-${idx}`}
-                                                    className="h-2.5 w-2.5"
+                                                    className="h-3.5 w-3.5"
                                                   />
                                                   <Label
                                                     htmlFor={`${question.id}-option-${idx}`}
-                                                    className="flex-1 cursor-pointer text-[10px] leading-tight"
+                                                    className="flex-1 cursor-pointer text-xs leading-relaxed"
                                                   >
-                                                    <span className="font-bold text-primary mr-0.5">
+                                                    <span className="font-bold text-primary mr-1">
                                                       {optionLabel}.
                                                     </span>
                                                     <span className="text-foreground">
@@ -831,14 +835,14 @@ function RepoPageContent() {
                                     )}
 
                                     {/* Save and Cancel Buttons */}
-                                    <div className="flex gap-1.5 pt-1">
+                                    <div className="flex gap-2 pt-1">
                                       <Button
                                         onClick={() => handleSave(question.id)}
                                         className="flex-1"
                                         size="sm"
                                       >
-                                        <Save className="h-3 w-3 mr-1" />
-                                        <span className="text-xs">Save</span>
+                                        <Save className="h-3.5 w-3.5 mr-1.5" />
+                                        Save
                                       </Button>
                                       <Button
                                         onClick={() =>
@@ -848,32 +852,32 @@ function RepoPageContent() {
                                         className="flex-1"
                                         size="sm"
                                       >
-                                        <X className="h-3 w-3 mr-1" />
-                                        <span className="text-xs">Cancel</span>
+                                        <X className="h-3.5 w-3.5 mr-1.5" />
+                                        Cancel
                                       </Button>
                                     </div>
                                   </div>
                                 ) : (
-                                  <div className="space-y-1.5 mt-1.5">
+                                  <div className="space-y-2">
                                     {(answer.textAnswer ||
                                       (isAgentAssumed && question.assumed)) && (
                                       <div
-                                        className={`p-1.5 rounded border ${
+                                        className={`p-2 rounded-md border ${
                                           answer.isUserModified
                                             ? "bg-blue-500/10 border-blue-500/20"
                                             : "bg-primary/10 border-primary/20"
                                         }`}
                                       >
-                                        <div className="flex items-start gap-1">
+                                        <div className="flex items-start gap-2">
                                           <Bot
-                                            className={`h-3 w-3 mt-0.5 flex-shrink-0 ${
+                                            className={`h-3.5 w-3.5 mt-0.5 flex-shrink-0 ${
                                               answer.isUserModified
-                                                ? "text-blue-400"
+                                                ? "text-blue-600"
                                                 : "text-primary"
                                             }`}
                                           />
                                           <div className="flex-1">
-                                            <p className="text-[10px] text-foreground leading-tight line-clamp-2">
+                                            <p className="text-xs text-foreground leading-relaxed">
                                               {answer.textAnswer ||
                                                 (question.assumed &&
                                                 question.options.length > 0
@@ -893,17 +897,17 @@ function RepoPageContent() {
 
                                     {/* Collapsible Options */}
                                     {question.options.length > 0 && (
-                                      <div className="space-y-1">
+                                      <div className="space-y-1.5">
                                         <button
                                           onClick={() =>
                                             toggleOptions(question.id)
                                           }
-                                          className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors w-full"
+                                          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors w-full font-medium"
                                         >
                                           {expandedOptions.has(question.id) ? (
-                                            <ChevronUp className="h-3 w-3" />
+                                            <ChevronUp className="h-3.5 w-3.5" />
                                           ) : (
-                                            <ChevronDown className="h-3 w-3" />
+                                            <ChevronDown className="h-3.5 w-3.5" />
                                           )}
                                           <span>
                                             {expandedOptions.has(question.id)
@@ -912,7 +916,7 @@ function RepoPageContent() {
                                           </span>
                                         </button>
                                         {expandedOptions.has(question.id) && (
-                                          <div className="space-y-1 pl-4 animate-in slide-in-from-top fade-in">
+                                          <div className="space-y-1.5 animate-in slide-in-from-top fade-in">
                                             {question.options.map(
                                               (option, idx) => {
                                                 const optionLabel =
@@ -926,9 +930,9 @@ function RepoPageContent() {
                                                 return (
                                                   <div
                                                     key={idx}
-                                                    className={`p-1.5 rounded border text-[10px] leading-tight ${
+                                                    className={`p-2 rounded-md border text-xs leading-relaxed ${
                                                       isSelected
-                                                        ? "bg-primary/10 border-primary/30 text-primary"
+                                                        ? "bg-primary/10 border-primary/30 text-primary font-medium"
                                                         : "bg-muted/30 border-border/50 text-foreground"
                                                     }`}
                                                   >
@@ -946,8 +950,8 @@ function RepoPageContent() {
                                     )}
 
                                     {!answer.textAnswer && !isAgentAssumed && (
-                                      <div className="p-1.5 rounded bg-muted/50 border border-border/50 text-center">
-                                        <p className="text-[10px] text-muted-foreground">
+                                      <div className="p-2 rounded-md bg-muted/50 border border-border/50 text-center">
+                                        <p className="text-xs text-muted-foreground">
                                           Hover to edit
                                         </p>
                                       </div>
@@ -971,34 +975,34 @@ function RepoPageContent() {
 
           {/* Sticky Additional Context & Done Button */}
           {visibleQuestions.size === questions.length && pageState === "questions" && (
-            <div className="border-t border-gray-200 bg-white px-4 py-4 sticky bottom-0 z-10">
+            <div className="border-t border-gray-200 bg-white px-6 py-4 sticky bottom-0 z-10">
               <div className="max-w-5xl mx-auto">
-                <Card className="border border-primary/20 bg-gradient-to-br from-card to-card/50">
-                  <CardHeader className="pb-2 px-3 pt-2.5">
+                <Card className="border border-primary/20 bg-gradient-to-br from-card to-card/50 shadow-sm">
+                  <CardHeader className="pb-3">
                     <CardTitle className="text-sm">
                       Additional Context
                     </CardTitle>
-                    <CardDescription className="text-[10px]">
+                    <CardDescription className="text-xs">
                       Add any additional context, requirements, or notes here
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-2 px-3 pb-3">
+                  <CardContent className="space-y-3">
                     <div className="relative">
                       <Textarea
                         placeholder="Add any additional context, requirements, or notes here..."
                         value={additionalContext}
                         onChange={(e) => setAdditionalContext(e.target.value)}
-                        className="min-h-[80px] text-xs resize-none pr-16"
+                        className="min-h-[80px] text-sm resize-none pr-20"
                       />
                       <div className="absolute bottom-2 right-2 flex items-center gap-1.5">
                         <button
                           onClick={() =>
                             toast.info("Notion file upload coming soon!")
                           }
-                          className="w-6 h-6 rounded-full bg-primary/10 hover:bg-primary/20 border border-primary/30 flex items-center justify-center transition-colors"
+                          className="w-7 h-7 rounded-md bg-primary/10 hover:bg-primary/20 border border-primary/30 flex items-center justify-center transition-all"
                           type="button"
                         >
-                          <FileText className="h-3 w-3 text-primary" />
+                          <FileText className="h-3.5 w-3.5 text-primary" />
                         </button>
                         <button
                           onClick={() => {
@@ -1016,29 +1020,28 @@ function RepoPageContent() {
                             };
                             input.click();
                           }}
-                          className="w-6 h-6 rounded-full bg-primary/10 hover:bg-primary/20 border border-primary/30 flex items-center justify-center transition-colors"
+                          className="w-7 h-7 rounded-md bg-primary/10 hover:bg-primary/20 border border-primary/30 flex items-center justify-center transition-all"
                           type="button"
                         >
-                          <Upload className="h-3 w-3 text-primary" />
+                          <Upload className="h-3.5 w-3.5 text-primary" />
                         </button>
                         <button
                           onClick={() => setLinkDialogOpen(true)}
-                          className="w-6 h-6 rounded-full bg-primary/10 hover:bg-primary/20 border border-primary/30 flex items-center justify-center transition-colors"
+                          className="w-7 h-7 rounded-md bg-primary/10 hover:bg-primary/20 border border-primary/30 flex items-center justify-center transition-all"
                           type="button"
                         >
-                          <LinkIcon className="h-3 w-3 text-primary" />
+                          <LinkIcon className="h-3.5 w-3.5 text-primary" />
                         </button>
                       </div>
                     </div>
                     <Button
                       onClick={handleDone}
                       disabled={isGenerating}
-                      className="w-full bg-black hover:bg-black/90"
-                      size="sm"
+                      className="w-full bg-black hover:bg-black/90 h-10"
                     >
-                      <CheckCircle2 className="h-3 w-3 mr-1.5" />
+                      <CheckCircle2 className="h-4 w-4 mr-2" />
                       Generate Implementation Plan
-                      <ArrowRight className="h-3 w-3 ml-1.5" />
+                      <ArrowRight className="h-4 w-4 ml-2" />
                     </Button>
                   </CardContent>
                 </Card>

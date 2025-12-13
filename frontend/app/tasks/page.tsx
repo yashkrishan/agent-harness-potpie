@@ -157,9 +157,9 @@ function TasksPageContent() {
   };
 
   const generateShareLink = () => {
-    // Use environment variable or fallback to current origin
+    // Use environment variable or fallback to potpie.ai
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
-                   (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
+                   (typeof window !== 'undefined' ? window.location.origin : 'https://potpie.ai');
     return `${baseUrl}/share/plan/${projectId}`;
   };
 
@@ -211,10 +211,10 @@ function TasksPageContent() {
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col overflow-hidden" style={{ marginRight: chatbotMinimized ? '0' : '400px', transition: 'margin-right 0.3s ease' }}>
         {/* Header */}
-        <div className="border-b border-gray-200 bg-white px-6 py-4">
-          <div className="flex items-center justify-between">
-              <div>
-              <h1 className="text-lg font-semibold text-gray-900">
+        <div className="border-b border-gray-200 bg-white px-8 py-4 h-[73px]">
+          <div className="flex items-center justify-between h-full">
+              <div className="flex flex-col justify-center">
+              <h1 className="text-xl font-semibold text-gray-900">
                   Phases & Tasks
               </h1>
               <p className="text-sm text-gray-600">
@@ -365,8 +365,8 @@ function TasksPageContent() {
                 {/* Phases Carousel/Timeline */}
                 {phases.length > 0 && (
                   <div className="relative">
-                    <div className="flex items-center gap-2 mb-4">
-                      <h3 className="font-semibold text-sm text-gray-900">
+                    <div className="flex items-center gap-3 mb-5">
+                      <h3 className="font-semibold text-base text-gray-900">
                         Phases Timeline
                   </h3>
                       <div className="flex-1 h-px bg-gray-200"></div>
@@ -390,52 +390,37 @@ function TasksPageContent() {
                                 style={{ width: `calc(${cardWidth} - 0.75rem)` }}
                               >
                                 <div
-                                  className={`relative h-full p-3 rounded-lg border cursor-pointer transition-all duration-200 bg-white ${
+                                  className={`relative h-full p-4 rounded-xl border cursor-pointer transition-all duration-200 bg-white ${
                           selectedPhase?.id === phase.id 
-                                      ? "border-blue-500 bg-blue-50 shadow-md ring-2 ring-blue-200"
-                                      : "border-gray-200 hover:border-blue-300 hover:bg-gray-50 hover:shadow-sm"
+                                      ? "border-blue-500 bg-blue-50 shadow-lg ring-2 ring-blue-200"
+                                      : "border-gray-200 hover:border-blue-400 hover:bg-gray-50 hover:shadow-md"
                                   }`}
                                   onClick={() => {
                                     setSelectedPhase(phase);
-                                    // Update carousel index to keep this phase visible
-                                    const visibleCards = 4;
-                                    const maxIndex = Math.max(0, phases.length - visibleCards);
-                                    const targetIndex = Math.min(
-                                      Math.max(0, idx - Math.floor(visibleCards / 2)),
-                                      maxIndex
-                                    );
-                                    setCarouselIndex(targetIndex);
                                     setSelectedTask(null);
                                   }}
                                 >
-                                  <div className="flex items-start gap-2">
-                                    {/* Phase Number Badge */}
-                                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
-                                      {idx + 1}
-                                    </div>
-                                    
-                                    <div className="flex-1 min-w-0">
-                                      {/* Selected Indicator */}
-                          {selectedPhase?.id === phase.id && (
-                                        <div className="flex items-center justify-end mb-1">
-                                          <div className="w-4 h-4 rounded-full bg-blue-600 flex items-center justify-center">
-                                            <CheckCircle2 className="h-2.5 w-2.5 text-white" />
-                                          </div>
-                                        </div>
-                                      )}
-                                      
-                                      <h4 className="font-semibold text-xs text-gray-900 mb-1.5 line-clamp-2 leading-tight">
+                                  <div className="flex flex-col h-full">
+                                    {/* Phase Name with Selected Indicator */}
+                                    <div className="flex items-start justify-between gap-2 mb-1.5">
+                                      <h4 className="font-medium text-xs text-gray-700 line-clamp-2 leading-tight uppercase tracking-wide flex-1">
                                         {phase.name}
                                       </h4>
-                                      <p className="text-xs text-gray-600 mb-2 leading-relaxed line-clamp-3">
-                                        {phase.description}
-                                      </p>
-                                      
-                                      {/* Task Count */}
-                                      <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-3 pt-2 border-t border-gray-100">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-600"></div>
-                                        <span className="font-medium">{phase.tasks.length} tasks</span>
-                                      </div>
+                                      {selectedPhase?.id === phase.id && (
+                                        <div className="w-4 h-4 rounded-full bg-blue-600 flex items-center justify-center shadow-sm flex-shrink-0">
+                                          <CheckCircle2 className="h-2.5 w-2.5 text-white" />
+                                        </div>
+                                      )}
+                                    </div>
+                                    
+                                    <p className="text-sm text-gray-600 mb-3 leading-relaxed line-clamp-3">
+                                      {phase.description}
+                                    </p>
+                                    
+                                    {/* Task Count */}
+                                    <div className="flex items-center gap-2 text-xs text-gray-500 mt-auto pt-2 border-t border-gray-200">
+                                      <div className="w-2 h-2 rounded-full bg-blue-600"></div>
+                                      <span className="font-semibold">{phase.tasks.length} tasks</span>
                                     </div>
                                   </div>
                         </div>
@@ -449,23 +434,25 @@ function TasksPageContent() {
                       {phases.length > 4 && (
                         <>
                           <button
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               setCarouselIndex(Math.max(0, carouselIndex - 1));
                             }}
                             disabled={carouselIndex === 0}
-                            className="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white shadow-lg border border-gray-300 hover:bg-gray-50 hover:border-gray-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                            className="absolute left-0 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-white shadow-lg border border-gray-300 hover:bg-gray-50 hover:border-gray-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                           >
-                            <ChevronLeft className="h-4 w-4 text-gray-700" />
+                            <ChevronLeft className="h-5 w-5 text-gray-700" />
                           </button>
                           <button
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               const maxIndex = Math.max(0, phases.length - 4);
                               setCarouselIndex(Math.min(maxIndex, carouselIndex + 1));
                             }}
                             disabled={carouselIndex >= Math.max(0, phases.length - 4)}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white shadow-lg border border-gray-300 hover:bg-gray-50 hover:border-gray-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                            className="absolute right-0 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-white shadow-lg border border-gray-300 hover:bg-gray-50 hover:border-gray-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                           >
-                            <ChevronRight className="h-4 w-4 text-gray-700" />
+                            <ChevronRight className="h-5 w-5 text-gray-700" />
                           </button>
                         </>
                       )}
@@ -473,19 +460,21 @@ function TasksPageContent() {
                     
                     {/* Dots Indicator */}
                     {phases.length > 4 && (
-                      <div className="flex justify-center gap-1.5 mt-4">
+                      <div className="flex justify-center gap-2 mt-5">
                         {Array.from({
                           length: Math.ceil(phases.length / 4),
                         }).map((_, idx) => (
                           <button
                             key={idx}
-                            onClick={() => {
-                              setCarouselIndex(idx * 4);
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const targetIndex = Math.min(idx, Math.max(0, phases.length - 4));
+                              setCarouselIndex(targetIndex);
                             }}
                             className={`rounded-full transition-all duration-300 ${
-                              Math.floor(carouselIndex / 4) === idx
-                                ? "w-8 h-1.5 bg-blue-600"
-                                : "w-1.5 h-1.5 bg-gray-300 hover:bg-gray-400"
+                              carouselIndex === idx
+                                ? "w-8 h-2 bg-blue-600"
+                                : "w-2 h-2 bg-gray-300 hover:bg-gray-400"
                             }`}
                           />
                         ))}
@@ -496,52 +485,52 @@ function TasksPageContent() {
 
                 {/* Phase Details Section */}
                 {selectedPhase && (
-                  <div className="mt-3">
-                    <h3 className="font-semibold text-sm mb-2 text-gray-900">
+                  <div className="mt-6">
+                    <h3 className="font-semibold text-base mb-4 text-gray-900">
                     Phase Details
                   </h3>
-                    <div className="space-y-2 bg-white border border-gray-200 rounded p-3">
+                    <div className="space-y-4 bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
                       {/* Phase Header */}
-                      <div className="p-2 rounded bg-blue-50 border border-blue-200">
-                        <h4 className="font-semibold text-xs mb-1 text-gray-900">
+                      <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
+                        <h4 className="font-semibold text-sm mb-2 text-gray-900">
                           {selectedPhase.name}
                         </h4>
-                        <p className="text-xs text-gray-600 leading-tight">
+                        <p className="text-sm text-gray-600 leading-relaxed">
                           {selectedPhase.description}
                         </p>
                       </div>
                       
                       {/* Tasks Section */}
-                      <div className="space-y-1.5">
-                        <h5 className="font-medium text-xs text-gray-900 flex items-center gap-1.5">
-                          <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">
+                      <div className="space-y-3">
+                        <h5 className="font-semibold text-sm text-gray-900 flex items-center gap-2">
+                          <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold">
                             {selectedPhase.tasks.length}
                           </span>
                           Tasks
                         </h5>
-                        <div className="space-y-1.5">
+                        <div className="space-y-3">
                         {selectedPhase.tasks.map((task, idx) => (
                           <div 
                             key={task.id} 
-                              className={`p-2 border rounded transition-all ${
+                              className={`p-4 border rounded-lg transition-all cursor-pointer ${
                                 selectedTask?.id === task.id
-                                  ? "border-blue-500 bg-blue-50"
-                                  : "border-gray-200 hover:border-blue-300 hover:bg-gray-50"
+                                  ? "border-blue-500 bg-blue-50 shadow-sm"
+                                  : "border-gray-200 hover:border-blue-400 hover:bg-gray-50 hover:shadow-sm"
                               }`}
                               onClick={() => setSelectedTask(task)}
                             >
-                              <div className="flex items-start gap-1.5">
-                                <div className="w-1.5 h-1.5 rounded-full bg-blue-600 mt-1 flex-shrink-0" />
-                                <div className="flex-1 min-w-0">
-                                  <h6 className="font-medium text-xs text-gray-900 mb-0.5">
+                              <div className="flex items-start gap-3">
+                                <div className="w-2 h-2 rounded-full bg-blue-600 mt-1.5 flex-shrink-0" />
+                                <div className="flex-1 min-w-0 space-y-2">
+                                  <h6 className="font-semibold text-sm text-gray-900">
                                     {task.name}
                                   </h6>
-                                  <p className="text-xs text-gray-600 leading-tight mb-1.5">
+                                  <p className="text-sm text-gray-600 leading-relaxed">
                                     {task.description}
                                   </p>
                                 {task.file_path && (
-                                    <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-gray-50 border border-gray-200 text-xs font-mono">
-                                      <FileCode className="h-3 w-3 text-blue-600" />
+                                    <div className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-gray-50 border border-gray-200 text-xs font-mono">
+                                      <FileCode className="h-3.5 w-3.5 text-blue-600 flex-shrink-0" />
                                       <span className="text-gray-600 truncate">
                                         {task.file_path}
                                       </span>
