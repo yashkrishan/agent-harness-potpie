@@ -14,14 +14,9 @@ async def startup_event():
     from database import init_db
     init_db()
 
-# Get CORS origins from environment variable, default to localhost:3000
-cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
-# Strip whitespace from each origin
-cors_origins = [origin.strip() for origin in cors_origins]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=cors_origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

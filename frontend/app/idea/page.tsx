@@ -36,7 +36,7 @@ function IdeaPageContent() {
 
   const [input, setInput] = useState(
     isDemo
-      ? "Build a fraud detection pipeline in the checkout service, come up with detailed heuristics for cc payments"
+      ? "Implement keyboard shortcuts for canvas navigation in Azimutt - zoom with =/-,  pan with Shift+Arrow keys, and tool switching"
       : ""
   );
   const [loading, setLoading] = useState(false);
@@ -50,27 +50,27 @@ function IdeaPageContent() {
   const linkedRepos = [
     {
       id: "1",
-      name: "checkout-service",
-      url: "https://github.com/company/checkout-service",
-      description: "Main checkout service repository",
+      name: "azimuttapp/azimutt",
+      url: "https://github.com/azimuttapp/azimutt",
+      description: "Database schema explorer and visualizer",
     },
     {
       id: "2",
-      name: "payment-gateway",
-      url: "https://github.com/company/payment-gateway",
-      description: "Payment processing service",
+      name: "azimuttapp/azimutt-js",
+      url: "https://github.com/azimuttapp/azimutt-js",
+      description: "JavaScript SDK for Azimutt",
     },
     {
       id: "3",
-      name: "user-service",
-      url: "https://github.com/company/user-service",
-      description: "User management service",
+      name: "azimuttapp/elm-json",
+      url: "https://github.com/azimuttapp/elm-json",
+      description: "JSON encoder/decoder for Elm",
     },
     {
       id: "4",
-      name: "api-gateway",
-      url: "https://github.com/company/api-gateway",
-      description: "API gateway and routing",
+      name: "azimuttapp/elm-uuid",
+      url: "https://github.com/azimuttapp/elm-uuid",
+      description: "UUID generation for Elm",
     },
   ];
 

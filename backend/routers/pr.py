@@ -18,16 +18,16 @@ async def create_pr(project_id: int, pr_data: PRCreate, db: Session = Depends(ge
     # Hardcoded for demo
     import time
     time.sleep(3)  # Simulate PR creation
-    
+
     project = db.query(Project).filter(Project.id == project_id).first()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
-    
-    # Hardcoded PR details
-    branch_name = f"feature/fraud-detection-pipeline-{project_id}"
-    pr_url = f"https://github.com/demo/repo/pull/{project_id + 100}"
-    pr_number = project_id + 100
-    
+
+    # Hardcoded PR details for Azimutt keyboard shortcuts
+    branch_name = f"feature/keyboard-shortcuts-{project_id}"
+    pr_url = f"https://github.com/azimuttapp/azimutt/pull/{project_id + 350}"
+    pr_number = project_id + 350
+
     # Store PR info
     pr_record = PR(
         project_id=project_id,
@@ -37,10 +37,10 @@ async def create_pr(project_id: int, pr_data: PRCreate, db: Session = Depends(ge
         status="created"
     )
     db.add(pr_record)
-    
+
     project.status = "pr_created"
     db.commit()
-    
+
     return {
         "pr_id": pr_record.id,
         "branch_name": branch_name,
@@ -53,7 +53,7 @@ async def get_pr(project_id: int, db: Session = Depends(get_db)):
     pr = db.query(PR).filter(PR.project_id == project_id).order_by(PR.id.desc()).first()
     if not pr:
         raise HTTPException(status_code=404, detail="PR not found")
-    
+
     return {
         "id": pr.id,
         "branch_name": pr.branch_name,
@@ -62,4 +62,3 @@ async def get_pr(project_id: int, db: Session = Depends(get_db)):
         "status": pr.status,
         "created_at": pr.created_at.isoformat()
     }
-

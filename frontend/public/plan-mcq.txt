@@ -1,391 +1,249 @@
-A. System Architecture & Code Understanding
+A. Arrow Key Behavior & Canvas Navigation
 
-1. How should the FraudScorer aggregate individual heuristic scores into a final fraud risk score?
-A. Simple average of all heuristic scores
-B. Weighted average based on configurable weights per heuristic
-C. Maximum score from any single heuristic
-D. Sum of all heuristic scores divided by number of heuristics
-E. Median of all heuristic scores
-➡️ Assumed: B (Weighted average) — Plan specifies "System MUST apply configurable weights to each heuristic" and "calculate final score as weighted average". Code architecture shows FraudScorer with heuristic_weights dict.
+1. How should new panning shortcuts coexist with existing arrow key behavior that moves tables by 10px (via moveTables in Hotkey.elm)?
+A. Replace table movement with canvas panning entirely
+B. Use Shift+Arrow for canvas panning, keep Arrow keys for table movement
+C. Use context-aware behavior (pan when nothing selected, move when table selected)
+D. Use Alt+Arrow for table movement, Arrow keys for panning
+E. Let users configure the behavior in settings
+➡️ Needs input — The existing moveTables function uses {dx: ±10, dy: ±10} for grid-aligned movement. Need to decide if this behavior should be preserved or modified.
 
-2. What is the relationship between FraudDetectionService, FraudScorer, and DecisionEngine?
-A. They are independent services that don't interact
-B. FraudDetectionService orchestrates FraudScorer to calculate score, then passes to DecisionEngine
-C. DecisionEngine directly calls individual heuristics
-D. FraudScorer makes decisions without DecisionEngine
-E. All three are merged into a single class
-➡️ Assumed: B — Code shows FraudDetectionService calls scorer.calculate_score(), then decision_engine.make_decision() with the score. This demonstrates understanding of the service orchestration pattern.
+2. What is the relationship between hotkey definitions in Conf.elm and handlers in Hotkey.elm?
+A. They are independent systems that don't interact
+B. Conf.elm defines hotkey mappings, Hotkey.elm contains handlers that process matched keys
+C. Hotkey.elm defines both mappings and handlers
+D. Conf.elm handles all keyboard events directly
+E. They are merged into a single module
+➡️ Assumed: B — Code shows Conf.hotkeys Dict with key mappings (e.g., "move-up" → ArrowUp), while Hotkey.elm has handleHotkey function with case statements.
 
-3. How should velocity checks handle concurrent transactions from the same user?
-A. Process each transaction independently without checking others
-B. Use database locks to prevent race conditions in transaction counting
-C. Ignore concurrent transactions as they're too rare
-D. Use optimistic locking with retry logic
-E. Queue all transactions and process sequentially
-➡️ Assumed: B — Plan explicitly states "Use database locks for critical sections" for handling race conditions in velocity checks. This shows understanding of concurrency issues in fraud detection.
+3. How should the zoom shortcuts handle keyboard layout variations (US vs international keyboards)?
+A. Only support US keyboard layout
+B. Support both '=' and '+' for zoom in to handle Shift key variations
+C. Let users configure zoom keys in settings
+D. Use number keys instead (1 for zoom in, 2 for zoom out)
+E. Only use Ctrl+scroll for zoom
+➡️ Assumed: B — Supporting both '=' and '+' (Shift+=) provides maximum compatibility across keyboard layouts.
 
-4. What data should each heuristic return to enable proper scoring and auditability?
-A. Only a numeric score (0-100)
-B. Score, reasoning, and confidence level
-C. Score and a boolean flag
-D. Only reasoning text
-E. Score and weight
-➡️ Assumed: B — Plan states "Each heuristic MUST return a risk score (0-100) and reasoning" and "MUST provide score breakdown for audit purposes". Code shows decision_result includes "reason" field.
+B. Zoom Implementation Details
 
-B. Fraud Scoring & Decision Logic
+4. What zoom increment should keyboard shortcuts use? Current Conf.elm defines zoom: { min: 0.001, max: 5, speed: 0.001 }
+A. Use existing speed value (0.001) from Conf.canvas.zoom.speed
+B. 10% of current zoom level (zoom * 0.1)
+C. Fixed 0.1 increment regardless of current zoom
+D. Match the scroll wheel zoom behavior
+E. Logarithmic scaling based on current zoom level
+➡️ Assumed: B (10% increments) — Provides consistent feel at all zoom levels. At zoom=1, increment is 0.1; at zoom=2, increment is 0.2.
 
-5. If a transaction has velocity_score=85, geo_score=20, amount_score=15, and card_score=10, with weights [0.3, 0.25, 0.25, 0.2] respectively, what is the final weighted score?
-A. 32.5
-B. 37.5
-C. 42.5
-D. 47.5
-E. 52.5
-➡️ Assumed: B (37.5) — Calculation: (85×0.3) + (20×0.25) + (15×0.25) + (10×0.2) = 25.5 + 5 + 3.75 + 2 = 36.25 ≈ 37.5. This demonstrates understanding of weighted scoring math.
+5. How should zoom bounds be enforced? Current Conf.canvas.zoom defines min=0.001, max=5.
+A. Ignore zoom limits, allow any zoom level
+B. Clamp zoom values using existing Conf.canvas.zoom.min and max
+C. Show error toast when limits reached
+D. Wrap around (max zoom goes to min)
+E. Use different limits for keyboard vs mouse zoom
+➡️ Assumed: B — Existing performZoom function already clamps values. Keyboard zoom should use same bounds for consistency.
 
-6. A transaction scores 75 on the fraud risk scale. What should the system do?
-A. Automatically block (high risk threshold is ≥80)
-B. Flag for manual review (medium risk is 60-79)
-C. Allow with monitoring (low risk is <60)
-D. Request additional verification
-E. Escalate to senior reviewer
-➡️ Assumed: B — Plan clearly states: "System MUST flag medium-risk transactions (score 60-79) for review". Score of 75 falls in medium-risk range, showing understanding of decision thresholds.
+6. How should zoom interact with the undo/redo system in Hotkey.elm?
+A. Zoom changes should not be undoable
+B. Each zoom step creates a history entry
+C. Only undo zoom when explicitly requested
+D. Group multiple rapid zoom steps into single undo action
+E. Zoom uses separate undo stack
+➡️ Needs input — The existing Undo/Redo messages handle layout changes. Decide if zoom should be part of layout history.
 
-7. How should the system handle a scenario where velocity check indicates high risk (score 90) but all other heuristics show low risk (scores <20)?
-A. Block immediately because one heuristic shows high risk
-B. Use weighted average, so high velocity alone won't block if weights are balanced
-C. Always trust velocity check over others
-D. Ignore velocity if other heuristics disagree
-E. Require manual review regardless of final score
-➡️ Assumed: B — System uses weighted aggregation, so a single high-scoring heuristic won't dominate if its weight is reasonable. This shows understanding that fraud detection requires holistic analysis, not single-factor decisions.
+C. Canvas Panning Implementation
 
-8. What should happen if the fraud check completes in 120ms (exceeding the 100ms SLA)?
-A. Reject the transaction as invalid
-B. Accept the result but log a performance warning
-C. Retry the check with a faster algorithm
-D. Use cached result from previous similar transaction
-E. Block the transaction due to timeout
-➡️ Assumed: B — The 100ms is a p95 SLA, meaning 5% can exceed it. System should accept valid results but monitor performance. This shows understanding of SLA vs hard limits.
+7. How many pixels should each Shift+Arrow key press pan the canvas? Current table movement uses 10px grid.
+A. 10px (match existing Conf.canvas.grid value)
+B. 50px (noticeable but controlled movement)
+C. 100px (faster navigation for large schemas)
+D. Percentage of viewport (10% of visible area)
+E. Configurable via Conf.elm
+➡️ Needs input — Panning needs to feel different from table movement. Consider that users navigate schemas with 100+ tables.
 
-C. Integration & API Design
+8. Should panning be smooth/animated or instant?
+A. Instant position change (matches current table movement)
+B. Smooth CSS transition animation
+C. Eased animation using requestAnimationFrame
+D. User preference in settings
+E. Smooth only for keyboard, instant for drag
+➡️ Assumed: A — Matches existing pattern where TableMove is instant. Keeps implementation simple and performant.
 
-9. How should the fraud detection API handle a request where the transaction amount is missing?
-A. Return a default low-risk score
-B. Block the transaction immediately
-C. Return an error response requesting required fields
-D. Use amount from previous transaction
-E. Skip amount-based heuristics and continue
-➡️ Assumed: C — Plan states "Validate all required fields before processing" and "Return clear error messages for invalid data". This shows understanding of proper API validation and error handling.
+9. How should panning work when tables are selected?
+A. Pan the canvas, tables stay selected
+B. Deselect tables before panning
+C. Move selected tables instead of panning
+D. Pan canvas and move selected tables together
+E. Show warning that tables are selected
+➡️ Assumed: A — Shift+Arrow should always pan. Arrow keys (without Shift) handle table movement via existing moveTables.
 
-10. What should the API response structure include for a transaction with fraud_score=65, risk_level="medium", decision="flag_for_review"?
-A. Only the decision (flag_for_review)
-B. Decision and fraud score
-C. Decision, score, risk_level, and reasoning breakdown
-D. Only the risk level
-E. Decision and timestamp
-➡️ Assumed: C — Plan requires "provide clear reasoning for each decision" and "provide score breakdown for audit purposes". Code shows return dict includes fraud_score, risk_level, decision, and reason. This demonstrates understanding of comprehensive API responses.
+D. Tool Switching Implementation
 
-11. If the checkout service calls the fraud API but the database is temporarily unavailable, what should happen?
-A. Return an error and block the transaction
-B. Use cached historical data if available, otherwise fall back to basic heuristics
-C. Always block when database is down
-D. Return a random score
-E. Queue the request for later processing
-➡️ Assumed: B — Plan explicitly states "Use cached data when available" and "Fallback to basic heuristics without historical data" for database unavailability. This shows understanding of graceful degradation patterns.
+10. What keyboard shortcuts should be used for tool switching given existing hotkeys in Conf.elm?
+A. Number keys (1 for select, 2 for drag) - simple but may conflict
+B. 'v' for select, 'h' for hand/drag (matches Figma)
+C. Space bar to toggle between tools (temporary drag while held)
+D. 'd' for drag - but note 'd' is currently unused in hotkeys
+E. Tab to cycle through tools
+➡️ Assumed: B — 'v' is industry standard. 'h' for hand tool. Note: existing 'h' is "hide" so may need Alt+h for hand.
 
-12. How should the system handle duplicate API requests for the same transaction (idempotency)?
-A. Process each request independently
-B. Return the same result from the first request
-C. Recalculate the score each time
-D. Reject duplicate requests
-E. Merge the requests into one
-➡️ Assumed: B — Plan mentions "Implement idempotency for duplicate requests" in edge cases. This shows understanding of API design best practices for financial systems.
+11. Should tool switching be toggle or hold-to-activate?
+A. Toggle only - press to switch, stays until pressed again
+B. Hold for temporary tool, release to return
+C. Both - tap to toggle, hold for temporary
+D. Context menu selection only
+E. Double-tap to toggle
+➡️ Needs input — Affects workflow significantly. Designers often prefer hold-to-drag, developers prefer toggle.
 
-D. Heuristic Implementation Details
+E. New Hotkey Entries in Conf.elm
 
-13. For velocity checks, what time window should be used to detect suspicious transaction frequency?
-A. Last 1 minute only
-B. Last 5 minutes
-C. Last 1 hour
-D. Configurable time window (e.g., 5min, 15min, 1hr) based on transaction patterns
-E. All transactions in the last 24 hours
-➡️ Assumed: D — Plan mentions "velocity checks (transactions per time period)" suggesting configurable windows. Real fraud systems use multiple time windows. This shows understanding that velocity patterns vary by context.
+12. What format should new hotkeys follow in the Conf.hotkeys Dict?
+A. Follow existing naming: "zoom-in", "zoom-out", "pan-up", etc.
+B. Use grouped naming: "canvas-zoom-in", "canvas-pan-up", etc.
+C. Use shorthand: "z+", "z-", "p↑", etc.
+D. Match DOM event key names exactly
+E. Use numeric codes instead of names
+➡️ Assumed: A — Matches existing patterns like "move-up", "reset-zoom", "fit-to-screen" in Conf.elm.
 
-14. How should geographic anomaly detection handle a user who travels frequently (legitimate business traveler)?
-A. Always flag as high risk
-B. Build a user profile over time and adjust thresholds for known travelers
-C. Ignore geographic checks for all users
-D. Require manual approval for all travel-related transactions
-E. Use only IP-based checks, ignore location
-➡️ Assumed: B — Plan mentions "User behavior pattern matching" as a heuristic. Building user profiles for legitimate patterns (like frequent travel) prevents false positives. This shows understanding of adaptive fraud detection.
+13. Should new hotkeys support the existing target filtering? (e.g., search-up targets input#app-nav-search)
+A. No targeting needed for canvas operations
+B. Target the #erd canvas element specifically
+C. Allow targeting but make it optional
+D. Use same targeting as table operations
+E. New targeting system for canvas
+➡️ Assumed: A — Canvas operations are global and don't need element targeting unlike search which targets specific input.
 
-15. When checking device fingerprinting, what should happen if the device fingerprint is missing or unavailable?
-A. Assign maximum risk score (100)
-B. Skip device-based scoring and continue with other heuristics
-C. Block the transaction immediately
-D. Assign a neutral score (50)
-E. Require additional verification
-➡️ Assumed: B — System should gracefully handle missing data. Plan emphasizes "graceful degradation on service failures". Missing fingerprint shouldn't block legitimate transactions, but should be noted in reasoning.
+F. Integration with Existing Zoom
 
-16. For amount anomaly detection, how should the system determine if an amount is "unusual"?
-A. Compare only to user's previous transaction amounts
-B. Compare to user's average, median, and standard deviation of historical amounts
-C. Compare to global average transaction amount
-D. Use fixed thresholds (e.g., >$1000 is unusual)
-E. Ignore amount checks entirely
-➡️ Assumed: B — Plan mentions "amount anomaly detection (unusual transaction amounts)" and "historical transaction analysis for pattern detection". Statistical analysis (mean, median, std dev) is standard for anomaly detection. This shows understanding of proper anomaly detection techniques.
+14. How should new zoom shortcuts interact with existing Ctrl+0 (reset-zoom) and Ctrl+Alt+0 (fit-to-screen)?
+A. Replace them with simpler = and - shortcuts
+B. Keep existing shortcuts, add = and - as alternatives
+C. Remove reset-zoom, keep only fit-to-screen
+D. Consolidate all zoom controls under a single modifier
+E. Make = and - primary, move Ctrl+0 to secondary
+➡️ Assumed: B — Preserves backward compatibility. Power users keep muscle memory while new users discover simpler shortcuts.
 
-E. Performance & Scalability
+15. Should '0' key reset zoom to 100% like in design tools?
+A. Yes, standalone '0' resets to zoom=1
+B. Keep Ctrl+0 only, don't add standalone '0'
+C. Make '0' context-aware (reset if zoomed, fit if at 100%)
+D. '0' fits content, Ctrl+0 resets to 100%
+E. Remove all reset functionality
+➡️ Needs input — Conflicts with potential future numeric shortcuts. Need to decide priority.
 
-17. To achieve 10,000 transactions/minute throughput with <100ms response time, what architectural pattern is most critical?
-A. Sequential processing of all heuristics
-B. Parallel execution of independent heuristics with async/await
-C. Processing only high-value transactions
-D. Caching all transaction results indefinitely
-E. Skipping some heuristics for speed
-➡️ Assumed: B — Heuristics like velocity, geo, amount, card can run in parallel since they're independent. Async/await enables concurrent execution. This shows understanding of performance optimization through parallelization.
+G. Help Modal Updates
 
-18. How should the system handle a traffic spike of 10x normal volume (100,000 transactions/minute)?
-A. Reject excess transactions
-B. Process all with degraded performance
-C. Implement request queuing and auto-scaling infrastructure
-D. Only process transactions above a certain value
-E. Shut down the service
-➡️ Assumed: C — Plan explicitly states "Handle traffic spikes (10x normal volume)" and "Implement request queuing" and "Auto-scale infrastructure". This shows understanding of scalable system design.
+16. The Help modal is triggered by "?" hotkey. How should new shortcuts be documented?
+A. Add new "Navigation" section in Help modal
+B. Append to existing keyboard shortcuts list
+C. Create separate "Canvas Controls" help tab
+D. Show tooltips on hover instead of help modal
+E. Auto-generate documentation from Conf.hotkeys Dict
+➡️ Needs input — Help modal structure affects discoverability. Consider whether to group by feature or by key type.
 
-19. What caching strategy should be used for frequently accessed data (e.g., user transaction history)?
-A. Cache everything indefinitely
-B. No caching, always query database
-C. Cache with TTL, invalidate on new transactions
-D. Cache only successful transactions
-E. Cache only failed transactions
-➡️ Assumed: C — Plan mentions "Caching for frequently accessed data" and Redis as optional. Cache invalidation on new transactions ensures data freshness while improving performance. This shows understanding of cache management.
+17. Should tooltips on zoom buttons show keyboard shortcuts?
+A. No, keep tooltips action-only
+B. Yes, format as "Zoom in (=)"
+C. Show shortcut on extended hover only
+D. Show shortcuts in status bar instead
+E. Make it a user preference
+➡️ Assumed: B — Maximum discoverability without cluttering UI. Users learn shortcuts naturally.
 
-F. Business Logic & Risk Management
+H. Testing Strategy
 
-20. If the false positive rate increases to 3% (above the 2% target), what should be the first action?
-A. Immediately block all transactions
-B. Analyze false positive patterns and adjust heuristic weights/thresholds
-C. Disable all heuristics
-D. Increase all risk thresholds
-E. No action needed, 3% is acceptable
-➡️ Assumed: B — Plan mentions "Adjust thresholds based on false positive analysis" and "Support dynamic weight adjustment". This shows understanding that fraud systems require continuous tuning based on performance metrics.
+18. What testing approach for the new handlers in Hotkey.elm?
+A. Manual browser testing only
+B. Elm unit tests for handleHotkey cases + browser testing
+C. Property-based tests with elm-test
+D. Integration tests with elm-program-test
+E. E2E tests with Playwright/Cypress
+➡️ Assumed: B — Follows existing pattern. handleHotkey is a pure function that returns (Model, Extra Msg), testable with elm-test.
 
-21. How should the system handle a new user's first transaction (no historical data available)?
-A. Block all first transactions as high risk
-B. Use lower risk thresholds and collect additional verification data
-C. Assign random risk score
-D. Skip all heuristics for new users
-E. Require manual approval for all new users
-➡️ Assumed: B — Plan explicitly states "Special handling for first-time users", "Lower risk threshold for new accounts", and "Collect additional verification data". This shows understanding of the new user onboarding challenge in fraud detection.
+19. How should cross-browser keyboard handling be tested?
+A. Test only in Chrome
+B. Manual testing in Chrome, Firefox, Safari
+C. Automated cross-browser tests
+D. Document known issues per browser
+E. Use polyfill library to normalize
+➡️ Assumed: B — Keyboard events vary across browsers. Manual verification needed for modifier keys especially.
 
-22. What should happen when a transaction is flagged for manual review (medium risk) but the review team is unavailable?
-A. Automatically block after timeout
-B. Allow the transaction to proceed after a grace period
-C. Queue for review and allow transaction with monitoring
-D. Escalate to automated blocking
-E. Hold transaction indefinitely
-➡️ Needs input — Plan specifies flagging for review but doesn't define timeout behavior. This requires business decision on review SLA and fallback behavior.
+I. Message Types for New Actions
 
-23. How should international transactions be handled differently from domestic ones?
-A. Treat identically to domestic transactions
-B. Apply stricter rules and higher risk thresholds
-C. Apply more lenient rules for international
-D. Use different heuristic weights and rules for international vs domestic
-E. Block all international transactions
-➡️ Assumed: D — Plan mentions "Different rules for international vs domestic" and "Currency conversion considerations". This shows understanding that fraud patterns vary by geography and requires different risk models.
+20. What Msg types are needed? Current pattern uses specific messages like Zoom, FitToScreen, TableMove.
+A. Reuse existing Zoom msg with delta parameter
+B. Add new ZoomIn, ZoomOut, PanCanvas Delta messages
+C. Single CanvasAction msg with action type parameter
+D. Extend TableMove to handle canvas panning
+E. Use port commands directly without Elm messages
+➡️ Needs input — Architecture decision affects code organization. Consider whether canvas panning is conceptually similar to table movement.
 
-G. Data Management & Compliance
+21. Should panning create a new Msg or modify existing Move messages?
+A. New PanCanvas Delta Msg for clarity
+B. Reuse Move with special delta values
+C. Add isPan flag to TableMove
+D. Handle in TypeScript before Elm
+E. Direct DOM manipulation
+➡️ Assumed: A — Separation of concerns. Canvas panning is fundamentally different from table movement in intent.
 
-24. How should the system handle PCI-DSS compliance for storing card data?
-A. Store full card numbers in plain text
-B. Store only last 4 digits and card hash, never full numbers
-C. Store full card numbers encrypted
-D. Don't store any card data
-E. Store card numbers in logs for debugging
-➡️ Assumed: B — Plan states "Encrypt sensitive card data (PCI-DSS compliance)". PCI-DSS best practice is to never store full card numbers; only last 4 digits and hashes for pattern matching. This shows understanding of payment security standards.
+J. Error Handling & Edge Cases
 
-25. For the 90-day transaction history requirement, what data should be retained?
-A. Only fraud scores and decisions
-B. Complete transaction data including card hashes, amounts, locations, timestamps, and fraud analysis results
-C. Only transaction IDs
-D. Only amounts and timestamps
-E. No data retention needed
-➡️ Assumed: B — Plan states "System MUST store all transaction records" and "System MUST log all fraud detection events" and "maintain 90 days of transaction history". Complete data enables pattern analysis and audit trails. This shows understanding of comprehensive data retention needs.
+22. What should happen when user zooms at minimum (0.001) or maximum (5)?
+A. Silently ignore the command
+B. Show toast: "Cannot zoom further"
+C. Visual bounce/shake feedback
+D. Play subtle audio cue
+E. Temporarily disable zoom shortcut
+➡️ Assumed: A — Silent ignore matches existing button behavior. Avoid disruptive feedback for common action.
 
-26. How should device fingerprinting data be handled to comply with GDPR?
-A. Store indefinitely for fraud prevention
-B. Store for 90 days like transaction data
-C. Store only with explicit user consent and allow deletion requests
-D. Don't store device fingerprints at all
-E. Store only in non-EU regions
-➡️ Assumed: C — Plan mentions "GDPR constraints on device fingerprint retention". GDPR requires consent and right to deletion. This shows understanding of privacy regulations affecting fraud detection systems.
+23. How should rapid key presses be handled (holding down = key)?
+A. Execute zoom on each keydown event
+B. Debounce to limit zoom rate
+C. Accelerate zoom the longer key is held
+D. Only respond to initial press
+E. Queue and batch zoom operations
+➡️ Assumed: A — Native key repeat handling is sufficient. Let OS control repeat rate.
 
-H. Error Handling & Edge Cases
+K. Implementation Priority
 
-27. If the fraud check times out after 150ms, what should the checkout service receive?
-A. Error response blocking the transaction
-B. Success response with decision="allow" and flag="timeout_review"
-C. No response, causing checkout to timeout
-D. Retry the request automatically
-E. Return a random decision
-➡️ Assumed: B — Plan explicitly states "If fraud check times out, default to 'allow' with flag for review". This prevents blocking legitimate transactions due to system issues. This shows understanding of fail-open vs fail-closed patterns.
+24. In what order should features be implemented?
+A. All features in single PR
+B. Phase 1: Zoom (=/-/0), Phase 2: Pan (Shift+Arrows), Phase 3: Tools & Help
+C. Start with Help modal updates, then add shortcuts incrementally
+D. Implement panning first as it's most requested
+E. Random order based on complexity
+➡️ Assumed: B — Zoom builds on existing performZoom infrastructure. Pan requires new Delta handling. Tools need UI changes.
 
-28. How should the system handle a heuristic that throws an exception during execution?
-A. Fail the entire fraud check
-B. Assign maximum risk score (100) for that heuristic
-C. Skip that heuristic, continue with others, and note in reasoning
-D. Retry the heuristic indefinitely
-E. Block the transaction immediately
-➡️ Assumed: C — Plan emphasizes "graceful degradation on service failures". Individual heuristic failures shouldn't break the entire system. This shows understanding of resilient system design.
+L. Documentation & Communication
 
-29. What should happen if two transactions from the same user arrive simultaneously with identical amounts and locations?
-A. Process both independently
-B. Detect duplicate and return same result for both
-C. Block both as suspicious
-D. Process first, queue second
-E. Merge into single transaction
-➡️ Assumed: B — Plan mentions "Implement idempotency for duplicate requests". Duplicate detection prevents double-processing and can indicate testing or replay attacks. This shows understanding of duplicate transaction handling.
+25. How should the new shortcuts be communicated to existing users?
+A. Release notes only
+B. In-app notification/banner on first use after update
+C. Updated Help modal is sufficient
+D. Blog post announcement
+E. All of the above
+➡️ Needs input — Depends on release process and user communication channels. Consider user disruption vs discoverability.
 
-I. Monitoring & Observability
+26. Should keyboard shortcuts be documented in README.md?
+A. Yes, add comprehensive shortcuts section
+B. No, keep README focused on setup/installation
+C. Link to in-app Help from README
+D. Separate SHORTCUTS.md file
+E. Only document in code comments
+➡️ Assumed: C — README stays focused. Link to docs or in-app Help for detailed reference.
 
-30. What metrics are most critical to monitor for fraud detection system health?
-A. Only transaction volume
-B. Fraud detection rate, false positive rate, API response time, and system errors
-C. Only error count
-D. Only fraud score distribution
-E. No metrics needed
-➡️ Assumed: B — Plan requires "comprehensive metrics and monitoring". Fraud detection rate and false positive rate measure effectiveness; response time measures performance; errors measure reliability. This shows understanding of observability for financial systems.
+M. Accessibility Considerations
 
-31. How should the system handle audit logging for compliance?
-A. Log only blocked transactions
-B. Log all transactions with complete fraud analysis details, timestamps, and decision reasoning
-C. Log only errors
-D. Log only high-risk transactions
-E. No logging needed
-➡️ Assumed: B — Plan states "System MUST log all fraud detection events" and "provide audit trail for compliance". Complete logging enables compliance audits and fraud pattern analysis. This shows understanding of regulatory requirements.
+27. How should screen reader users be informed of shortcut availability?
+A. ARIA labels on buttons mentioning shortcuts
+B. Separate accessibility documentation
+C. Screen reader announces shortcuts on hover
+D. No special handling needed
+E. Keyboard shortcuts section in Help modal is sufficient
+➡️ Assumed: A — ARIA labels like "Zoom in, keyboard shortcut equals" provide inline accessibility.
 
-32. If the fraud detection rate drops below 90%, what should trigger an alert?
-A. No alert needed
-B. Alert only if it drops below 50%
-C. Alert immediately when rate drops below target (90%) with details on which heuristics are underperforming
-D. Alert only at end of month
-E. Alert only for high-value transactions
-➡️ Assumed: C — Plan targets "95%+ fraud detection accuracy" and "Reduce fraudulent transaction approval rate by 90%". Monitoring should alert on performance degradation with diagnostic information. This shows understanding of proactive monitoring and alerting strategies.
-
-J. Checkout Service Integration & Flow Design
-
-33. At what point in the checkout flow should the fraud detection check be performed?
-A. Before payment method selection
-B. After payment details are entered but before payment processing
-C. After payment processing is complete
-D. Asynchronously after checkout completion
-E. Multiple checks at different stages
-➡️ Assumed: B — Fraud check should happen after payment details are collected but before processing payment. This prevents fraudulent charges while maintaining good UX. Early checks (before payment entry) are too early; late checks (after payment) defeat the purpose. This shows understanding of checkout flow integration timing.
-
-34. How should the checkout service handle a fraud check that takes longer than the expected 100ms?
-A. Block the checkout and show error to user
-B. Continue checkout flow and process fraud check asynchronously
-C. Wait indefinitely for fraud check to complete
-D. Skip fraud check and allow transaction
-E. Show loading state and wait up to 200ms, then proceed with "pending review" status
-➡️ Assumed: E — Checkout UX requires reasonable timeouts. Waiting up to 200ms (2x SLA) provides buffer while maintaining responsiveness. If timeout occurs, proceed with "pending review" to avoid blocking legitimate users. This shows understanding of checkout UX requirements and SLA handling.
-
-35. What should happen in the checkout flow when fraud detection service is completely unavailable (network partition)?
-A. Block all checkouts until service is restored
-B. Allow all checkouts to proceed without fraud checks
-C. Show error to user and prevent checkout completion
-D. Queue fraud checks for later processing and allow checkout with "pending review" flag
-E. Redirect users to a different payment method
-➡️ Assumed: D — Plan emphasizes "graceful degradation on service failures". Queueing fraud checks allows checkout to proceed while maintaining fraud detection capability. Blocking all checkouts would cause significant business impact. This shows understanding of resilience patterns in critical payment flows.
-
-36. How should the checkout service handle a fraud decision of "block" (high risk) from the fraud detection API?
-A. Silently allow the transaction anyway
-B. Show generic error message and prevent checkout
-C. Show specific fraud-related message explaining the block
-D. Automatically retry with different payment method
-E. Queue transaction for manual review and allow checkout
-➡️ Needs input — This requires business decision on user communication. Generic errors protect against fraud pattern learning, but specific messages improve transparency. Balance between security and user experience needs business input.
-
-37. When integrating fraud detection into checkout, how should the checkout service handle partial transaction data (e.g., missing location info)?
-A. Reject the checkout request immediately
-B. Call fraud API with available data and let fraud service handle missing fields
-C. Use default values for missing fields
-D. Skip fraud check entirely if any data is missing
-E. Request additional information from user before proceeding
-➡️ Assumed: B — Checkout should pass available data to fraud service. Fraud service can handle missing fields gracefully (as per question 15). Rejecting checkout for missing optional fields would hurt UX. This shows understanding of service responsibility boundaries.
-
-K. Credit Card Payment Specific Edge Cases
-
-38. How should the system handle a transaction where the card CVV validation fails at the payment gateway but fraud check passes?
-A. Allow transaction since fraud check passed
-B. Block transaction due to CVV failure
-C. Flag for manual review due to conflicting signals
-D. Retry with different CVV
-E. Skip CVV validation if fraud check passes
-➡️ Assumed: C — CVV failure is a strong fraud signal even if heuristics pass. However, CVV failures can be legitimate (user error). Flagging for review balances security with user experience. This shows understanding of multi-signal fraud detection.
-
-39. What should happen when a transaction involves an expired credit card?
-A. Allow if fraud check passes (expiration is payment gateway concern)
-B. Block immediately as high fraud risk
-C. Flag for review but allow if fraud score is low
-D. Request card update from user
-E. Use expiration date as fraud signal in scoring
-➡️ Assumed: E — Expired cards can indicate stolen card usage or legitimate user oversight. Including expiration status as a fraud signal (with appropriate weight) allows nuanced decision-making. This shows understanding of using all available payment signals.
-
-40. How should the system handle transactions from different card networks (Visa, Mastercard, Amex) differently?
-A. Treat all card networks identically
-B. Apply different fraud thresholds based on network chargeback rates
-C. Use network-specific fraud rules and patterns
-D. Only process Visa and Mastercard, block others
-E. Require additional verification for certain networks
-➡️ Assumed: C — Different card networks have different fraud patterns, chargeback policies, and risk profiles. Visa and Mastercard have different fraud characteristics than Amex. Network-specific rules improve accuracy. This shows understanding of payment industry nuances.
-
-41. If a transaction is flagged for 3D Secure (3DS) authentication by the payment gateway, how should fraud detection interact with this?
-A. Skip fraud check if 3DS is required
-B. Run fraud check first, then require 3DS only if high risk
-C. Always require both fraud check and 3DS
-D. Use 3DS result as additional fraud signal in scoring
-E. Let payment gateway handle 3DS, fraud check is independent
-➡️ Assumed: D — 3DS authentication results (pass/fail/challenge) provide valuable fraud signals. Integrating 3DS results into fraud scoring creates a more comprehensive risk assessment. This shows understanding of leveraging payment gateway security features.
-
-42. How should the system handle card tokenization in checkout (stored payment methods)?
-A. Treat tokenized cards the same as new card entries
-B. Apply lower risk scores for previously used tokens
-C. Skip fraud checks for tokenized cards entirely
-D. Use token usage history as fraud signal
-E. Require re-verification for all tokenized cards
-➡️ Assumed: D — Tokenized cards have usage history that can inform fraud detection. Previously used tokens with good history should have lower risk, but token compromise is still possible. This shows understanding of payment token security considerations.
-
-L. System Integration & Resilience
-
-43. How should the checkout service handle version mismatches between its fraud API client and the fraud detection service API?
-A. Block all checkouts until versions match
-B. Use backward-compatible API calls and log version mismatch
-C. Automatically update checkout service to match fraud service
-D. Disable fraud checks until versions are aligned
-E. Use multiple API versions simultaneously
-➡️ Assumed: B — API versioning should support backward compatibility. Logging mismatches allows monitoring while maintaining service availability. Blocking checkouts for version mismatches would cause unnecessary outages. This shows understanding of API versioning best practices.
-
-44. What circuit breaker pattern should the checkout service use when calling the fraud detection API?
-A. No circuit breaker, always attempt calls
-B. Open circuit after 5 consecutive failures, close after 30 seconds
-C. Open circuit after 50% failure rate over 1 minute, close after 2 minutes
-D. Always use cached responses, never call API
-E. Retry indefinitely until success
-➡️ Assumed: C — Circuit breakers should trigger on failure rate thresholds, not just consecutive failures. Time-based recovery (2 minutes) allows service to recover while preventing cascading failures. This shows understanding of resilience patterns for inter-service communication.
-
-45. How should the checkout service handle retries when fraud detection API returns a 5xx error?
-A. Never retry, fail immediately
-B. Retry once immediately
-C. Retry with exponential backoff up to 3 times
-D. Retry indefinitely until success
-E. Queue for async processing and allow checkout
-➡️ Assumed: C — Exponential backoff with limited retries (3 attempts) balances reliability with latency. Indefinite retries could cause checkout timeouts. This shows understanding of retry strategies in synchronous payment flows.
-
-46. If the checkout service and fraud detection service have a network partition, how long should checkout wait before timing out?
-A. 50ms (half of fraud SLA)
-B. 100ms (same as fraud SLA)
-C. 200ms (2x fraud SLA to account for network overhead)
-D. 500ms (5x fraud SLA for safety)
-E. Wait indefinitely
-➡️ Assumed: C — 200ms provides reasonable buffer for network latency while maintaining checkout responsiveness. Too short (50-100ms) causes unnecessary timeouts; too long (500ms+) hurts UX. This shows understanding of timeout configuration in distributed systems.
+28. Should there be a way to disable keyboard shortcuts for users who need them?
+A. No, shortcuts are always active
+B. Global setting to disable all shortcuts
+C. Per-shortcut customization
+D. Focus mode that disables shortcuts
+E. Conflicts with browser/OS shortcuts handled automatically
+➡️ Assumed: A — Shortcuts only trigger when canvas is focused. Text inputs already handled via onInput flag.

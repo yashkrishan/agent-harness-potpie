@@ -82,143 +82,466 @@ interface ExecutionLog {
   created_at: string;
 }
 
-// Hardcoded demo code changes
+// Hardcoded demo code changes for Azimutt keyboard shortcuts
 const DEMO_CODE_CHANGES: Record<string, { before: string; after: string }> = {
-  "services/fraud_detection_service.py": {
-    before: `from typing import Dict, Optional
-from models.transaction import Transaction
+  "frontend/src/Conf.elm": {
+    before: `module Conf exposing (canvas, constants, hotkeys, ids, schema, ui)
 
-class FraudDetectionService:
-    """Main service for fraud detection"""
-    
-    def analyze_transaction(self, transaction_data: Dict) -> Dict:
-        # TODO: Implement fraud detection
-        pass`,
-    after: `from typing import Dict, Optional
-from models.transaction import Transaction
-from services.fraud_scorer import FraudScorer
-from services.decision_engine import DecisionEngine
-import logging
+import Dict exposing (Dict)
+import Libs.Models.Hotkey exposing (Hotkey, hotkey, target)
 
-logger = logging.getLogger(__name__)
+hotkeys : Dict String (List Hotkey)
+hotkeys =
+    Dict.fromList
+        [ ( "search-open", [ { hotkey | key = "/" } ] )
+        , ( "notes", [ { hotkey | key = "n" } ] )
+        , ( "new-memo", [ { hotkey | key = "m" } ] )
+        , ( "collapse", [ { hotkey | key = "c" } ] )
+        , ( "show", [ { hotkey | key = "s" } ] )
+        , ( "hide", [ { hotkey | key = "h" }, { hotkey | key = "Backspace" }, { hotkey | key = "Delete" } ] )
+        , ( "move-up", [ { hotkey | key = "ArrowUp" } ] )
+        , ( "move-right", [ { hotkey | key = "ArrowRight" } ] )
+        , ( "move-down", [ { hotkey | key = "ArrowDown" } ] )
+        , ( "move-left", [ { hotkey | key = "ArrowLeft" } ] )
+        , ( "reset-zoom", [ { hotkey | key = "0", ctrl = True } ] )
+        , ( "fit-to-screen", [ { hotkey | key = "0", ctrl = True, alt = True } ] )
+        , ( "cancel", [ { hotkey | key = "Escape" } ] )
+        , ( "help", [ { hotkey | key = "?" } ] )
+        ]`,
+    after: `module Conf exposing (canvas, constants, hotkeys, ids, schema, ui)
 
-class FraudDetectionService:
-    """Main service for fraud detection pipeline"""
-    
-    def __init__(self):
-        self.scorer = FraudScorer()
-        self.decision_engine = DecisionEngine()
-    
-    async def analyze_transaction(self, transaction_data: Dict) -> Dict:
-        """Analyze a transaction for fraud
-        
-        Args:
-            transaction_data: Transaction information including card, amount, location, etc.
-            
-        Returns:
-            Dict with fraud_score, risk_level, decision, and reason
-        """
-        logger.info(f"Analyzing transaction: {transaction_data.get('transaction_id')}")
-        
-        # Calculate fraud score using heuristics
-        fraud_score = await self.scorer.calculate_score(transaction_data)
-        
-        # Make decision based on score
-        decision_result = self.decision_engine.make_decision(fraud_score, transaction_data)
-        
-        return {
-            "fraud_score": fraud_score,
-            "risk_level": decision_result["risk_level"],
-            "decision": decision_result["decision"],
-            "reason": decision_result["reason"]
-        }`,
+import Dict exposing (Dict)
+import Libs.Models.Hotkey exposing (Hotkey, hotkey, target)
+
+hotkeys : Dict String (List Hotkey)
+hotkeys =
+    Dict.fromList
+        [ ( "search-open", [ { hotkey | key = "/" } ] )
+        , ( "notes", [ { hotkey | key = "n" } ] )
+        , ( "new-memo", [ { hotkey | key = "m" } ] )
+        , ( "collapse", [ { hotkey | key = "c" } ] )
+        , ( "show", [ { hotkey | key = "s" } ] )
+        , ( "hide", [ { hotkey | key = "h" }, { hotkey | key = "Backspace" }, { hotkey | key = "Delete" } ] )
+        , ( "move-up", [ { hotkey | key = "ArrowUp" } ] )
+        , ( "move-right", [ { hotkey | key = "ArrowRight" } ] )
+        , ( "move-down", [ { hotkey | key = "ArrowDown" } ] )
+        , ( "move-left", [ { hotkey | key = "ArrowLeft" } ] )
+        , ( "reset-zoom", [ { hotkey | key = "0", ctrl = True } ] )
+        , ( "fit-to-screen", [ { hotkey | key = "0", ctrl = True, alt = True } ] )
+        , ( "cancel", [ { hotkey | key = "Escape" } ] )
+        , ( "help", [ { hotkey | key = "?" } ] )
+        -- NEW: Zoom shortcuts (Issue #350)
+        , ( "zoom-in", [ { hotkey | key = "=" }, { hotkey | key = "+" } ] )
+        , ( "zoom-out", [ { hotkey | key = "-" } ] )
+        -- NEW: Canvas panning with Shift+Arrow (Issue #350)
+        , ( "pan-up", [ { hotkey | key = "ArrowUp", shift = True } ] )
+        , ( "pan-down", [ { hotkey | key = "ArrowDown", shift = True } ] )
+        , ( "pan-left", [ { hotkey | key = "ArrowLeft", shift = True } ] )
+        , ( "pan-right", [ { hotkey | key = "ArrowRight", shift = True } ] )
+        -- NEW: Tool switching (Issue #350)
+        , ( "tool-select", [ { hotkey | key = "v" } ] )
+        , ( "tool-drag", [ { hotkey | key = "h", alt = True } ] )
+        , ( "toggle-table-list", [ { hotkey | key = "t" } ] )
+        , ( "arrange-tables", [ { hotkey | key = "a", alt = True } ] )
+        ]`,
   },
-  "models/transaction.py": {
-    before: `from sqlalchemy import Column, String, Float
+  "frontend/src/PagesComponents/Organization_/Project_/Updates/Hotkey.elm": {
+    before: `module PagesComponents.Organization_.Project_.Updates.Hotkey exposing (handleHotkey)
 
-class Transaction:
-    id: str
-    amount: float`,
-    after: `from sqlalchemy import Column, String, Float, DateTime, JSON, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
-from database import Base
-import uuid
-from datetime import datetime
+import Conf
+import Libs.Models.Delta exposing (Delta)
+import PagesComponents.Organization_.Project_.Models exposing (Model, Msg(..))
+import PagesComponents.Organization_.Project_.Updates.Extra as Extra exposing (Extra)
 
-class Transaction(Base):
-    __tablename__ = "transactions"
-    
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(String, nullable=False, index=True)
-    amount = Column(Float, nullable=False)
-    currency = Column(String, default="USD")
-    card_last_four = Column(String(4), nullable=False)
-    merchant_name = Column(String, nullable=True)
-    transaction_type = Column(String, nullable=False)
-    location = Column(JSON, nullable=True)
-    fraud_score = Column(Float, nullable=True)
-    risk_level = Column(String, nullable=True)
-    decision = Column(String, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)`,
+handleHotkey : Time.Posix -> Model -> String -> ( Model, Extra Msg )
+handleHotkey _ model hotkey =
+    case hotkey of
+        "reset-zoom" ->
+            ( model, Zoom (1 - (model.erd |> Maybe.mapOrElse (Erd.currentLayout >> .canvas >> .zoom) 0)) |> Extra.msg )
+
+        "fit-to-screen" ->
+            ( model, FitToScreen |> Extra.msg )
+
+        "move-up" ->
+            ( model, model |> moveTables { dx = 0, dy = -10 } |> Extra.msgM )
+
+        "move-down" ->
+            ( model, model |> moveTables { dx = 0, dy = 10 } |> Extra.msgM )
+
+        "move-left" ->
+            ( model, model |> moveTables { dx = -10, dy = 0 } |> Extra.msgM )
+
+        "move-right" ->
+            ( model, model |> moveTables { dx = 10, dy = 0 } |> Extra.msgM )
+
+        _ ->
+            ( model, "Unhandled hotkey" |> Toasts.warning |> Toast |> Extra.msg )`,
+    after: `module PagesComponents.Organization_.Project_.Updates.Hotkey exposing (handleHotkey)
+
+import Conf
+import Libs.Models.Delta exposing (Delta)
+import PagesComponents.Organization_.Project_.Models exposing (Model, Msg(..))
+import PagesComponents.Organization_.Project_.Updates.Extra as Extra exposing (Extra)
+
+handleHotkey : Time.Posix -> Model -> String -> ( Model, Extra Msg )
+handleHotkey _ model hotkey =
+    case hotkey of
+        "reset-zoom" ->
+            ( model, Zoom (1 - (model.erd |> Maybe.mapOrElse (Erd.currentLayout >> .canvas >> .zoom) 0)) |> Extra.msg )
+
+        "fit-to-screen" ->
+            ( model, FitToScreen |> Extra.msg )
+
+        -- NEW: Zoom in/out shortcuts (Issue #350)
+        "zoom-in" ->
+            let
+                currentZoom = model.erd |> Maybe.mapOrElse (Erd.currentLayout >> .canvas >> .zoom) 1
+            in
+            ( model, Zoom (currentZoom * 0.1) |> Extra.msg )
+
+        "zoom-out" ->
+            let
+                currentZoom = model.erd |> Maybe.mapOrElse (Erd.currentLayout >> .canvas >> .zoom) 1
+            in
+            ( model, Zoom (currentZoom * -0.1) |> Extra.msg )
+
+        -- NEW: Canvas panning with Shift+Arrow (Issue #350)
+        "pan-up" ->
+            ( model, PanCanvas { dx = 0, dy = -50 } |> Extra.msg )
+
+        "pan-down" ->
+            ( model, PanCanvas { dx = 0, dy = 50 } |> Extra.msg )
+
+        "pan-left" ->
+            ( model, PanCanvas { dx = -50, dy = 0 } |> Extra.msg )
+
+        "pan-right" ->
+            ( model, PanCanvas { dx = 50, dy = 0 } |> Extra.msg )
+
+        -- NEW: Tool switching (Issue #350)
+        "tool-select" ->
+            ( model, CursorMode CursorMode.Select |> Extra.msg )
+
+        "tool-drag" ->
+            ( model, CursorMode CursorMode.Drag |> Extra.msg )
+
+        "toggle-table-list" ->
+            ( model, DetailsSidebarMsg DetailsSidebar.Toggle |> Extra.msg )
+
+        "arrange-tables" ->
+            ( model, ArrangeTables Dagre |> Extra.msg )
+
+        "move-up" ->
+            ( model, model |> moveTables { dx = 0, dy = -10 } |> Extra.msgM )
+
+        "move-down" ->
+            ( model, model |> moveTables { dx = 0, dy = 10 } |> Extra.msgM )
+
+        "move-left" ->
+            ( model, model |> moveTables { dx = -10, dy = 0 } |> Extra.msgM )
+
+        "move-right" ->
+            ( model, model |> moveTables { dx = 10, dy = 0 } |> Extra.msgM )
+
+        _ ->
+            ( model, "Unhandled hotkey" |> Toasts.warning |> Toast |> Extra.msg )`,
   },
-  "services/fraud_scorer.py": {
-    before: `# Fraud scoring service
-class FraudScorer:
-    pass`,
-    after: `from typing import Dict
-import logging
+  "frontend/src/PagesComponents/Organization_/Project_/Models.elm": {
+    before: `module PagesComponents.Organization_.Project_.Models exposing (..)
 
-logger = logging.getLogger(__name__)
+import Libs.Models exposing (ZoomDelta)
+import Libs.Models.Delta exposing (Delta)
 
-class FraudScorer:
-    """Service for calculating fraud scores using heuristics"""
-    
-    def __init__(self):
-        self.velocity_threshold = 5  # transactions per minute
-        self.amount_threshold = 10000  # USD
-        self.distance_threshold = 1000  # km
-    
-    async def calculate_score(self, transaction_data: Dict) -> float:
-        """Calculate fraud score based on multiple heuristics
-        
-        Returns:
-            Score between 0-100, higher = more suspicious
-        """
-        score = 0.0
-        
-        # Heuristic 1: Unusual amount
-        amount = transaction_data.get("amount", 0)
-        if amount > self.amount_threshold:
-            score += 30
-            logger.warning(f"High amount transaction: {amount}")
-        
-        # Heuristic 2: Velocity check
-        velocity = transaction_data.get("velocity", 0)
-        if velocity > self.velocity_threshold:
-            score += 25
-            logger.warning(f"High velocity detected: {velocity} transactions/min")
-        
-        # Heuristic 3: Location anomaly
-        distance = transaction_data.get("distance_from_last", 0)
-        if distance > self.distance_threshold:
-            score += 20
-            logger.warning(f"Large distance: {distance}km from last transaction")
-        
-        # Heuristic 4: Card age
-        card_age_days = transaction_data.get("card_age_days", 365)
-        if card_age_days < 30:
-            score += 15
-            logger.warning(f"New card detected: {card_age_days} days old")
-        
-        # Heuristic 5: Time of day
-        hour = transaction_data.get("hour", 12)
-        if hour < 6 or hour > 22:
-            score += 10
-            logger.info(f"Unusual time: {hour}:00")
-        
-        return min(score, 100.0)`,
+type Msg
+    = ToggleMobileMenu
+    | SearchUpdated String
+    | SelectItems_ (List HtmlId)
+    | SelectAll
+    | CanvasPosition Position.Diagram
+    | TableMove TableId Delta
+    | TablePosition TableId Position.Grid
+    | FitToScreen
+    | SetView_ CanvasProps
+    | ArrangeTables AutoLayoutMethod
+    | CursorMode CursorMode
+    | OnWheel WheelEvent
+    | Zoom ZoomDelta
+    | Focus HtmlId
+    | DropdownToggle HtmlId`,
+    after: `module PagesComponents.Organization_.Project_.Models exposing (..)
+
+import Libs.Models exposing (ZoomDelta)
+import Libs.Models.Delta exposing (Delta)
+
+type Msg
+    = ToggleMobileMenu
+    | SearchUpdated String
+    | SelectItems_ (List HtmlId)
+    | SelectAll
+    | CanvasPosition Position.Diagram
+    | TableMove TableId Delta
+    | TablePosition TableId Position.Grid
+    | FitToScreen
+    | SetView_ CanvasProps
+    | ArrangeTables AutoLayoutMethod
+    | CursorMode CursorMode
+    | OnWheel WheelEvent
+    | Zoom ZoomDelta
+    -- NEW: Canvas panning message (Issue #350)
+    | PanCanvas Delta
+    | Focus HtmlId
+    | DropdownToggle HtmlId`,
+  },
+  "frontend/src/PagesComponents/Organization_/Project_/Updates/Canvas.elm": {
+    before: `module PagesComponents.Organization_.Project_.Updates.Canvas exposing
+    ( fitCanvas
+    , handleWheel
+    , zoomCanvas
+    )
+
+import Conf
+import Models.Position as Position
+import Models.Project.CanvasProps as CanvasProps exposing (CanvasProps)
+
+zoomCanvas : Float -> Position.Viewport -> CanvasProps -> CanvasProps
+zoomCanvas delta center canvas =
+    canvas |> performZoom delta center
+
+performZoom : Float -> Position.Viewport -> CanvasProps -> CanvasProps
+performZoom delta center canvas =
+    let
+        newZoom : Float
+        newZoom =
+            (canvas.zoom + delta) |> clamp Conf.canvas.zoom.min Conf.canvas.zoom.max
+
+        zoomFactor : Float
+        zoomFactor =
+            newZoom / canvas.zoom
+    in
+    { canvas
+        | zoom = newZoom
+        , position = canvas.position |> Position.zoomDiagram zoomFactor center
+    }`,
+    after: `module PagesComponents.Organization_.Project_.Updates.Canvas exposing
+    ( fitCanvas
+    , handleWheel
+    , panCanvas
+    , zoomCanvas
+    )
+
+import Conf
+import Models.Position as Position
+import Models.Project.CanvasProps as CanvasProps exposing (CanvasProps)
+import Libs.Models.Delta exposing (Delta)
+
+zoomCanvas : Float -> Position.Viewport -> CanvasProps -> CanvasProps
+zoomCanvas delta center canvas =
+    canvas |> performZoom delta center
+
+performZoom : Float -> Position.Viewport -> CanvasProps -> CanvasProps
+performZoom delta center canvas =
+    let
+        newZoom : Float
+        newZoom =
+            (canvas.zoom + delta) |> clamp Conf.canvas.zoom.min Conf.canvas.zoom.max
+
+        zoomFactor : Float
+        zoomFactor =
+            newZoom / canvas.zoom
+    in
+    { canvas
+        | zoom = newZoom
+        , position = canvas.position |> Position.zoomDiagram zoomFactor center
+    }
+
+{-| Pan the canvas by a delta amount (Issue #350).
+Adjusts delta for current zoom level so panning feels consistent.
+-}
+panCanvas : Delta -> CanvasProps -> CanvasProps
+panCanvas delta canvas =
+    let
+        -- Adjust delta for zoom level so panning feels consistent
+        adjustedDelta : Delta
+        adjustedDelta =
+            { dx = delta.dx / canvas.zoom
+            , dy = delta.dy / canvas.zoom
+            }
+    in
+    { canvas
+        | position = canvas.position |> Position.moveDiagram adjustedDelta
+    }`,
+  },
+  "frontend/src/PagesComponents/Organization_/Project_/Views/Modals/Help.elm": {
+    before: `shortcuts : Section msg
+shortcuts =
+    { title = "Shortcuts"
+    , body =
+        [ p [] [ text "Keyboard shortcuts improve user productivity:" ]
+        , div [ class "mt-3" ]
+            ([ { hotkey = [ "/" ], description = "Focus on the search" }
+             , { hotkey = [ "Ctrl", "s" ], description = "Save the project" }
+             , { hotkey = [ "d" ], description = "Hide a table or column" }
+             , { hotkey = [ "Alt", "l" ], description = "Create a layout" }
+             , { hotkey = [ "Alt", "v" ], description = "Add a virtual relation" }
+             , { hotkey = [ "Alt", "p" ], description = "Open find path dialog" }
+             , { hotkey = [ "Ctrl", "0" ], description = "Zoom to 100%" }
+             , { hotkey = [ "Ctrl", "Alt", "0" ], description = "Fit diagram to screen" }
+             , { hotkey = [ "Escape" ], description = "Cancel current action" }
+             , { hotkey = [ "?" ], description = "Open this help dialog" }
+             ]
+                |> List.map (\\h -> div [ class "flex justify-between" ] [ hotkey h.hotkey, text h.description ])
+            )
+        ]
+    }`,
+    after: `shortcuts : Section msg
+shortcuts =
+    { title = "Shortcuts"
+    , body =
+        [ p [] [ text "Keyboard shortcuts improve user productivity:" ]
+        , div [ class "mt-3" ]
+            ([ { hotkey = [ "/" ], description = "Focus on the search" }
+             , { hotkey = [ "Ctrl", "s" ], description = "Save the project" }
+             , { hotkey = [ "d" ], description = "Hide a table or column" }
+             , { hotkey = [ "Alt", "l" ], description = "Create a layout" }
+             , { hotkey = [ "Alt", "v" ], description = "Add a virtual relation" }
+             , { hotkey = [ "Alt", "p" ], description = "Open find path dialog" }
+             , { hotkey = [ "Ctrl", "0" ], description = "Zoom to 100%" }
+             , { hotkey = [ "Ctrl", "Alt", "0" ], description = "Fit diagram to screen" }
+             -- NEW: Zoom shortcuts (Issue #350)
+             , { hotkey = [ "=" ], description = "Zoom in (10%)" }
+             , { hotkey = [ "-" ], description = "Zoom out (10%)" }
+             -- NEW: Canvas panning (Issue #350)
+             , { hotkey = [ "Shift", "↑" ], description = "Pan canvas up" }
+             , { hotkey = [ "Shift", "↓" ], description = "Pan canvas down" }
+             , { hotkey = [ "Shift", "←" ], description = "Pan canvas left" }
+             , { hotkey = [ "Shift", "→" ], description = "Pan canvas right" }
+             -- NEW: Tool switching (Issue #350)
+             , { hotkey = [ "v" ], description = "Select tool" }
+             , { hotkey = [ "Alt", "h" ], description = "Hand/drag tool" }
+             , { hotkey = [ "t" ], description = "Toggle table list" }
+             , { hotkey = [ "Alt", "a" ], description = "Auto-arrange tables" }
+             , { hotkey = [ "Escape" ], description = "Cancel current action" }
+             , { hotkey = [ "?" ], description = "Open this help dialog" }
+             ]
+                |> List.map (\\h -> div [ class "flex justify-between" ] [ hotkey h.hotkey, text h.description ])
+            )
+        ]
+    }`,
+  },
+  "frontend/tests/PagesComponents/Organization_/Project_/Updates/HotkeyTest.elm": {
+    before: `module PagesComponents.Organization_.Project_.Updates.HotkeyTest exposing (suite)
+
+import Expect
+import Test exposing (Test, describe, test)
+
+suite : Test
+suite =
+    describe "Hotkey"
+        [ describe "handleHotkey"
+            [ test "reset-zoom returns Zoom message" <|
+                \\_ ->
+                    Expect.pass
+            ]
+        ]`,
+    after: `module PagesComponents.Organization_.Project_.Updates.HotkeyTest exposing (suite)
+
+import Expect
+import Test exposing (Test, describe, test)
+import PagesComponents.Organization_.Project_.Updates.Hotkey exposing (handleHotkey)
+import PagesComponents.Organization_.Project_.Models exposing (Msg(..))
+
+suite : Test
+suite =
+    describe "Hotkey"
+        [ describe "handleHotkey"
+            [ test "reset-zoom returns Zoom message" <|
+                \\_ ->
+                    Expect.pass
+
+            -- NEW: Zoom shortcut tests (Issue #350)
+            , test "zoom-in increases zoom by 10%" <|
+                \\_ ->
+                    let
+                        model = { defaultModel | erd = Just { defaultErd | canvas = { zoom = 1.0 } } }
+                        ( _, extra ) = handleHotkey Time.millisToPosix 0 model "zoom-in"
+                    in
+                    extra |> Expect.equal (Zoom 0.1 |> Extra.msg)
+
+            , test "zoom-out decreases zoom by 10%" <|
+                \\_ ->
+                    let
+                        model = { defaultModel | erd = Just { defaultErd | canvas = { zoom = 1.0 } } }
+                        ( _, extra ) = handleHotkey Time.millisToPosix 0 model "zoom-out"
+                    in
+                    extra |> Expect.equal (Zoom -0.1 |> Extra.msg)
+
+            -- NEW: Pan shortcut tests (Issue #350)
+            , test "pan-up moves canvas up by 50px" <|
+                \\_ ->
+                    let
+                        ( _, extra ) = handleHotkey Time.millisToPosix 0 defaultModel "pan-up"
+                    in
+                    extra |> Expect.equal (PanCanvas { dx = 0, dy = -50 } |> Extra.msg)
+
+            , test "pan-down moves canvas down by 50px" <|
+                \\_ ->
+                    let
+                        ( _, extra ) = handleHotkey Time.millisToPosix 0 defaultModel "pan-down"
+                    in
+                    extra |> Expect.equal (PanCanvas { dx = 0, dy = 50 } |> Extra.msg)
+
+            -- NEW: Tool switching tests (Issue #350)
+            , test "tool-select sets cursor mode to Select" <|
+                \\_ ->
+                    let
+                        ( _, extra ) = handleHotkey Time.millisToPosix 0 defaultModel "tool-select"
+                    in
+                    extra |> Expect.equal (CursorMode CursorMode.Select |> Extra.msg)
+
+            , test "toggle-table-list sends DetailsSidebar.Toggle" <|
+                \\_ ->
+                    let
+                        ( _, extra ) = handleHotkey Time.millisToPosix 0 defaultModel "toggle-table-list"
+                    in
+                    extra |> Expect.equal (DetailsSidebarMsg DetailsSidebar.Toggle |> Extra.msg)
+            ]
+        ]`,
+  },
+  "CHANGELOG.md": {
+    before: `# Changelog
+
+## [Unreleased]
+
+## [0.42.0] - 2024-01-15
+
+### Added
+- Data explorer improvements
+- LLM SQL generation
+
+### Fixed
+- Table rendering performance
+- Search result ordering`,
+    after: `# Changelog
+
+## [Unreleased]
+
+### Added
+- **Keyboard shortcuts for canvas navigation** (Issue #350)
+  - Zoom: \`=\` to zoom in, \`-\` to zoom out (10% increments)
+  - Pan: \`Shift+Arrow\` keys to pan canvas (50px per press)
+  - Tools: \`v\` for select, \`Alt+h\` for hand/drag tool
+  - Features: \`t\` to toggle table list, \`Alt+a\` to auto-arrange
+  - Updated Help modal with new shortcuts documentation
+
+## [0.42.0] - 2024-01-15
+
+### Added
+- Data explorer improvements
+- LLM SQL generation
+
+### Fixed
+- Table rendering performance
+- Search result ordering`,
   },
 };
 
@@ -683,7 +1006,7 @@ function ExecutionPageContent() {
         id: Date.now() + 1,
         task_id: null,
         log_type: "agent_message",
-        content: `📋 Initializing fraud detection pipeline (${allTasks.length} tasks)`,
+        content: `📋 Initializing keyboard shortcuts implementation (${allTasks.length} tasks)`,
         created_at: new Date().toISOString(),
       },
     ]);

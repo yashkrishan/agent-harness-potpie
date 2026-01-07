@@ -362,124 +362,128 @@ function TasksPageContent() {
               </Card>
             ) : (
               <>
-                {/* Phases Carousel/Timeline */}
+                {/* Phases Carousel */}
                 {phases.length > 0 && (
-                  <div className="relative">
-                    <div className="flex items-center gap-3 mb-5">
-                      <h3 className="font-semibold text-base text-gray-900">
-                        Phases Timeline
-                  </h3>
-                      <div className="flex-1 h-px bg-gray-200"></div>
+                  <div className="w-full flex-shrink-0 bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+                    <div className="flex items-center gap-3 mb-4 pb-3 border-b border-gray-200">
+                      <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                        <Sparkles className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <span className="font-semibold text-sm text-gray-900">
+                        Phases
+                      </span>
                     </div>
-                    
+
                     <div className="relative">
-                      {/* Carousel Container with proper overflow */}
-                      <div className="overflow-hidden rounded-lg">
+                      <div className="relative overflow-hidden">
+                        {/* Carousel Container */}
                         <div
-                          className="flex transition-transform duration-300 ease-in-out gap-3"
+                          className="flex transition-transform duration-500 ease-in-out"
                           style={{
-                            transform: `translateX(-${carouselIndex * (100 / 4)}%)`,
+                            transform: `translateX(-${carouselIndex * (100 / Math.min(phases.length, 4))}%)`,
                           }}
                         >
-                          {phases.map((phase, idx) => {
-                            const cardWidth = `${100 / 4}%`;
-                            return (
-                      <div
-                        key={phase.id}
-                                className="flex-shrink-0"
-                                style={{ width: `calc(${cardWidth} - 0.75rem)` }}
+                          {phases.map((phase, idx) => (
+                            <div
+                              key={phase.id}
+                              className="flex-shrink-0 px-1"
+                              style={{ width: `${100 / Math.min(phases.length, 4)}%` }}
+                            >
+                              <div
+                                className={`relative p-3 rounded-lg border cursor-pointer transition-all duration-300 bg-white ${
+                                  selectedPhase?.id === phase.id
+                                    ? "border-blue-500 bg-blue-50 shadow-md"
+                                    : "border-gray-200 hover:border-blue-300 hover:bg-gray-50"
+                                }`}
+                                onClick={() => {
+                                  setSelectedPhase(phase);
+                                  setSelectedTask(null);
+                                  setCarouselIndex(Math.floor(idx / Math.min(phases.length, 4)));
+                                }}
                               >
-                                <div
-                                  className={`relative h-full p-4 rounded-xl border cursor-pointer transition-all duration-200 bg-white ${
-                          selectedPhase?.id === phase.id 
-                                      ? "border-blue-500 bg-blue-50 shadow-lg ring-2 ring-blue-200"
-                                      : "border-gray-200 hover:border-blue-400 hover:bg-gray-50 hover:shadow-md"
-                                  }`}
-                                  onClick={() => {
-                                    setSelectedPhase(phase);
-                                    setSelectedTask(null);
-                                  }}
-                                >
-                                  <div className="flex flex-col h-full">
-                                    {/* Phase Name with Selected Indicator */}
-                                    <div className="flex items-start justify-between gap-2 mb-1.5">
-                                      <h4 className="font-medium text-xs text-gray-700 line-clamp-2 leading-tight uppercase tracking-wide flex-1">
-                                        {phase.name}
-                                      </h4>
-                                      {selectedPhase?.id === phase.id && (
-                                        <div className="w-4 h-4 rounded-full bg-blue-600 flex items-center justify-center shadow-sm flex-shrink-0">
-                                          <CheckCircle2 className="h-2.5 w-2.5 text-white" />
-                                        </div>
-                                      )}
+                                <div className="flex items-start gap-1.5">
+                                  <div className="flex-1 min-w-0">
+                                    <div className="text-[10px] font-medium text-gray-500 uppercase tracking-wide mb-1">
+                                      Phase {idx + 1}
                                     </div>
-                                    
-                                    <p className="text-sm text-gray-600 mb-3 leading-relaxed line-clamp-3">
+                                    <h4 className="font-semibold text-sm text-gray-900 mb-0.5 line-clamp-1 leading-snug">
+                                      {phase.name.replace(/^Phase \d+:\s*/i, '')}
+                                    </h4>
+                                    <p className="text-xs text-gray-500 leading-normal line-clamp-2">
                                       {phase.description}
                                     </p>
-                                    
-                                    {/* Task Count */}
-                                    <div className="flex items-center gap-2 text-xs text-gray-500 mt-auto pt-2 border-t border-gray-200">
-                                      <div className="w-2 h-2 rounded-full bg-blue-600"></div>
-                                      <span className="font-semibold">{phase.tasks.length} tasks</span>
-                                    </div>
                                   </div>
-                        </div>
+                                </div>
+
+                                {/* Progress Line */}
+                                {idx < phases.length - 1 && (
+                                  <div className="absolute top-1/2 -right-1 w-2 h-0.5 bg-gray-300 z-0 transform -translate-y-1/2">
+                                    <div
+                                      className={`h-full bg-blue-600 transition-all duration-500 ${
+                                        idx < carouselIndex * Math.min(phases.length, 4) ? "w-full" : "w-0"
+                                      }`}
+                                    ></div>
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                            );
-                          })}
+                          ))}
                         </div>
+
+                        {/* Navigation Arrows */}
+                        {phases.length > 4 && (
+                          <>
+                            <button
+                              onClick={() => {
+                                setCarouselIndex(Math.max(0, carouselIndex - 1));
+                              }}
+                              disabled={carouselIndex === 0}
+                              className="absolute left-0 top-1/2 -translate-y-1/2 z-20 p-1.5 rounded-full bg-white shadow-md border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                            >
+                              <ChevronLeft className="h-4 w-4 text-gray-700" />
+                            </button>
+                            <button
+                              onClick={() => {
+                                setCarouselIndex(
+                                  Math.min(
+                                    Math.ceil(phases.length / Math.min(phases.length, 4)) - 1,
+                                    carouselIndex + 1
+                                  )
+                                );
+                              }}
+                              disabled={
+                                carouselIndex >=
+                                Math.ceil(phases.length / Math.min(phases.length, 4)) - 1
+                              }
+                              className="absolute right-0 top-1/2 -translate-y-1/2 z-20 p-1.5 rounded-full bg-white shadow-md border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                            >
+                              <ChevronRight className="h-4 w-4 text-gray-700" />
+                            </button>
+                          </>
+                        )}
                       </div>
-                      
-                      {/* Navigation Arrows */}
+
+                      {/* Dots Indicator */}
                       {phases.length > 4 && (
-                        <>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setCarouselIndex(Math.max(0, carouselIndex - 1));
-                            }}
-                            disabled={carouselIndex === 0}
-                            className="absolute left-0 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-white shadow-lg border border-gray-300 hover:bg-gray-50 hover:border-gray-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                          >
-                            <ChevronLeft className="h-5 w-5 text-gray-700" />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const maxIndex = Math.max(0, phases.length - 4);
-                              setCarouselIndex(Math.min(maxIndex, carouselIndex + 1));
-                            }}
-                            disabled={carouselIndex >= Math.max(0, phases.length - 4)}
-                            className="absolute right-0 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-white shadow-lg border border-gray-300 hover:bg-gray-50 hover:border-gray-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                          >
-                            <ChevronRight className="h-5 w-5 text-gray-700" />
-                          </button>
-                        </>
+                        <div className="flex justify-center gap-1 mt-1.5">
+                          {Array.from({
+                            length: Math.ceil(phases.length / Math.min(phases.length, 4)),
+                          }).map((_, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => {
+                                setCarouselIndex(idx);
+                              }}
+                              className={`h-1 rounded-full transition-all duration-300 ${
+                                carouselIndex === idx
+                                  ? "w-4 bg-blue-600"
+                                  : "w-1 bg-gray-300 hover:bg-gray-400"
+                              }`}
+                            />
+                          ))}
+                        </div>
                       )}
                     </div>
-                    
-                    {/* Dots Indicator */}
-                    {phases.length > 4 && (
-                      <div className="flex justify-center gap-2 mt-5">
-                        {Array.from({
-                          length: Math.ceil(phases.length / 4),
-                        }).map((_, idx) => (
-                          <button
-                            key={idx}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const targetIndex = Math.min(idx, Math.max(0, phases.length - 4));
-                              setCarouselIndex(targetIndex);
-                            }}
-                            className={`rounded-full transition-all duration-300 ${
-                              carouselIndex === idx
-                                ? "w-8 h-2 bg-blue-600"
-                                : "w-2 h-2 bg-gray-300 hover:bg-gray-400"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                    )}
                   </div>
                 )}
 

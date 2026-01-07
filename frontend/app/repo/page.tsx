@@ -276,7 +276,7 @@ function RepoPageContent() {
         ...prev,
         {
           role: "assistant",
-          content: "I'm analyzing the repository and generating context-specific questions for your fraud detection implementation plan.",
+          content: "I'm analyzing the repository and generating context-specific questions for your keyboard shortcuts implementation plan.",
         },
       ]);
 
@@ -336,7 +336,7 @@ function RepoPageContent() {
           ...withoutThinking,
           {
             role: "assistant",
-            content: `I've generated ${filtered.length} key questions covering system architecture, fraud scoring, integration design, edge cases, and checkout service specifics. Review and refine them as needed!`,
+            content: `I've generated ${filtered.length} key questions covering hotkey architecture, zoom implementation, canvas panning, tool switching, and UI integration. Review and refine them as needed!`,
           },
         ];
       });

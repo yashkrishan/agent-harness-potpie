@@ -1,91 +1,99 @@
-A. System Architecture & Code Understanding
+A. Arrow Key Behavior & Canvas Navigation
 
-1. How should the FraudScorer aggregate individual heuristic scores into a final fraud risk score?
-A. Simple average of all heuristic scores
-B. Weighted average based on configurable weights per heuristic
-C. Maximum score from any single heuristic
-D. Sum of all heuristic scores divided by number of heuristics
-E. Median of all heuristic scores
-➡️ Assumed: B (Weighted average) — Plan specifies "System MUST apply configurable weights to each heuristic" and "calculate final score as weighted average". Code architecture shows FraudScorer with heuristic_weights dict.
+1. How should new panning shortcuts coexist with existing arrow key behavior that moves tables by 10px (via moveTables in Hotkey.elm)?
+A. Replace table movement with canvas panning entirely
+B. Use Shift+Arrow for canvas panning, keep Arrow keys for table movement
+C. Use context-aware behavior (pan when nothing selected, move when table selected)
+D. Use Alt+Arrow for table movement, Arrow keys for panning
+E. Let users configure the behavior in settings
+➡️ Needs input — The existing moveTables function uses {dx: ±10, dy: ±10} for grid-aligned movement. Need to decide if this behavior should be preserved or modified.
 
-2. What is the relationship between FraudDetectionService, FraudScorer, and DecisionEngine?
-A. They are independent services that don't interact
-B. FraudDetectionService orchestrates FraudScorer to calculate score, then passes to DecisionEngine
-C. DecisionEngine directly calls individual heuristics
-D. FraudScorer makes decisions without DecisionEngine
-E. All three are merged into a single class
-➡️ Assumed: B — Code shows FraudDetectionService calls scorer.calculate_score(), then decision_engine.make_decision() with the score. This demonstrates understanding of the service orchestration pattern.
+B. Zoom Implementation Details
 
-3. How should velocity checks handle concurrent transactions from the same user?
-A. Process each transaction independently without checking others
-B. Use database locks to prevent race conditions in transaction counting
-C. Ignore concurrent transactions as they're too rare
-D. Use optimistic locking with retry logic
-E. Queue all transactions and process sequentially
-➡️ Assumed: B — Plan explicitly states "Use database locks for critical sections" for handling race conditions in velocity checks. This shows understanding of concurrency issues in fraud detection.
+2. What zoom increment should keyboard shortcuts use? Current Conf.elm defines zoom: { min: 0.001, max: 5, speed: 0.001 }
+A. Use existing speed value (0.001) from Conf.canvas.zoom.speed
+B. 10% of current zoom level (zoom * 0.1)
+C. Fixed 0.1 increment regardless of current zoom
+D. Match the scroll wheel zoom behavior
+E. Logarithmic scaling based on current zoom level
+➡️ Assumed: B (10% increments) — Provides consistent feel at all zoom levels. At zoom=1, increment is 0.1; at zoom=2, increment is 0.2.
 
-B. Fraud Scoring & Decision Logic
+C. Canvas Panning Implementation
 
-4. If a transaction has velocity_score=85, geo_score=20, amount_score=15, and card_score=10, with weights [0.3, 0.25, 0.25, 0.2] respectively, what is the final weighted score?
-A. 32.5
-B. 37.5
-C. 42.5
-D. 47.5
-E. 52.5
-➡️ Assumed: B (37.5) — Calculation: (85×0.3) + (20×0.25) + (15×0.25) + (10×0.2) = 25.5 + 5 + 3.75 + 2 = 36.25 ≈ 37.5. This demonstrates understanding of weighted scoring math.
+3. How many pixels should each Shift+Arrow key press pan the canvas? Current table movement uses 10px grid.
+A. 10px (match existing Conf.canvas.grid value)
+B. 50px (noticeable but controlled movement)
+C. 100px (faster navigation for large schemas)
+D. Percentage of viewport (10% of visible area)
+E. Configurable via Conf.elm
+➡️ Needs input — Panning needs to feel different from table movement. Consider that users navigate schemas with 100+ tables.
 
-5. A transaction scores 75 on the fraud risk scale. What should the system do?
-A. Automatically block (high risk threshold is ≥80)
-B. Flag for manual review (medium risk is 60-79)
-C. Allow with monitoring (low risk is <60)
-D. Request additional verification
-E. Escalate to senior reviewer
-➡️ Assumed: B — Plan clearly states: "System MUST flag medium-risk transactions (score 60-79) for review". Score of 75 falls in medium-risk range, showing understanding of decision thresholds.
+D. Tool Switching Implementation
 
-C. Integration & API Design
+4. What keyboard shortcuts should be used for tool switching given existing hotkeys in Conf.elm?
+A. Number keys (1 for select, 2 for drag) - simple but may conflict
+B. 'v' for select, 'h' for hand/drag (matches Figma)
+C. Space bar to toggle between tools (temporary drag while held)
+D. 'd' for drag - but note 'd' is currently unused in hotkeys
+E. Tab to cycle through tools
+➡️ Assumed: B — 'v' is industry standard. 'h' for hand tool avoids conflict with existing 'h' (hide) by using a modifier.
 
-6. How should the fraud detection API handle a request where the transaction amount is missing?
-A. Return a default low-risk score
-B. Block the transaction immediately
-C. Return an error response requesting required fields
-D. Use amount from previous transaction
-E. Skip amount-based heuristics and continue
-➡️ Assumed: C — Plan states "Validate all required fields before processing" and "Return clear error messages for invalid data". This shows understanding of proper API validation and error handling.
+E. New Hotkey Entries in Conf.elm
 
-7. If the checkout service calls the fraud API but the database is temporarily unavailable, what should happen?
-A. Return an error and block the transaction
-B. Use cached historical data if available, otherwise fall back to basic heuristics
-C. Always block when database is down
-D. Return a random score
-E. Queue the request for later processing
-➡️ Assumed: B — Plan explicitly states "Use cached data when available" and "Fallback to basic heuristics without historical data" for database unavailability. This shows understanding of graceful degradation patterns.
+5. What format should new hotkeys follow in the Conf.hotkeys Dict? Current format: ( "action-name", [ { hotkey | key = "x", ctrl = True } ] )
+A. Follow existing naming: "zoom-in", "zoom-out", "pan-up", etc.
+B. Use grouped naming: "canvas-zoom-in", "canvas-pan-up", etc.
+C. Use shorthand: "z+", "z-", "p↑", etc.
+D. Match DOM event key names exactly
+E. Use numeric codes instead of names
+➡️ Assumed: A — Matches existing patterns like "move-up", "reset-zoom", "fit-to-screen" in Conf.elm.
 
-D. Performance & Scalability
+F. Integration with Existing Zoom (reset-zoom, fit-to-screen)
 
-8. To achieve 10,000 transactions/minute throughput with <100ms response time, what architectural pattern is most critical?
-A. Sequential processing of all heuristics
-B. Parallel execution of independent heuristics with async/await
-C. Processing only high-value transactions
-D. Caching all transaction results indefinitely
-E. Skipping some heuristics for speed
-➡️ Assumed: B — Heuristics like velocity, geo, amount, card can run in parallel since they're independent. Async/await enables concurrent execution. This shows understanding of performance optimization through parallelization.
+6. How should new zoom shortcuts interact with existing Ctrl+0 (reset-zoom) and Ctrl+Alt+0 (fit-to-screen)?
+A. Replace them with simpler = and - shortcuts
+B. Keep existing shortcuts, add = and - as alternatives
+C. Remove reset-zoom, keep only fit-to-screen
+D. Consolidate all zoom controls under a single modifier
+E. Make = and - primary, move Ctrl+0 to secondary
+➡️ Assumed: B — Preserves backward compatibility. Power users keep muscle memory while new users discover simpler shortcuts.
 
-E. Business Logic & Risk Management
+G. Help Modal Updates (HelpMsg in Hotkey.elm)
 
-9. How should the system handle a new user's first transaction (no historical data available)?
-A. Block all first transactions as high risk
-B. Use lower risk thresholds and collect additional verification data
-C. Assign random risk score
-D. Skip all heuristics for new users
-E. Require manual approval for all new users
-➡️ Assumed: B — Plan explicitly states "Special handling for first-time users", "Lower risk threshold for new accounts", and "Collect additional verification data". This shows understanding of the new user onboarding challenge in fraud detection.
+7. The Help modal is triggered by "?" hotkey. How should new shortcuts be documented?
+A. Add new "Navigation" section in Help modal
+B. Append to existing keyboard shortcuts list
+C. Create separate "Canvas Controls" help tab
+D. Show tooltips on hover instead of help modal
+E. Auto-generate documentation from Conf.hotkeys Dict
+➡️ Needs input — Help modal structure affects discoverability. Consider whether to group by feature or by key type.
 
-F. Data Management & Compliance
+H. Testing Strategy for Hotkey Handlers
 
-10. How should the system handle PCI-DSS compliance for storing card data?
-A. Store full card numbers in plain text
-B. Store only last 4 digits and card hash, never full numbers
-C. Store full card numbers encrypted
-D. Don't store any card data
-E. Store card numbers in logs for debugging
-➡️ Assumed: B — Plan states "Encrypt sensitive card data (PCI-DSS compliance)". PCI-DSS best practice is to never store full card numbers; only last 4 digits and hashes for pattern matching. This shows understanding of payment security standards.
+8. What testing approach for the new handlers in Hotkey.elm?
+A. Manual browser testing only
+B. Elm unit tests for handleHotkey cases + browser testing
+C. Property-based tests with elm-test
+D. Integration tests with elm-program-test
+E. E2E tests with Playwright/Cypress
+➡️ Assumed: B — Follows existing pattern. handleHotkey is a pure function that returns (Model, Extra Msg), testable with elm-test.
+
+I. Message Types for New Actions
+
+9. What Msg types are needed? Current pattern uses specific messages like Zoom, FitToScreen, TableMove.
+A. Reuse existing Zoom msg with delta parameter
+B. Add new ZoomIn, ZoomOut, PanCanvas Delta messages
+C. Single CanvasAction msg with action type parameter
+D. Extend TableMove to handle canvas panning
+E. Use port commands directly without Elm messages
+➡️ Needs input — Architecture decision affects code organization. Consider whether canvas panning is conceptually similar to table movement.
+
+J. Implementation Priority
+
+10. In what order should features be implemented given the existing codebase structure?
+A. All features in single PR
+B. Phase 1: Zoom (=/-/0), Phase 2: Pan (Shift+Arrows), Phase 3: Tools & Help
+C. Start with Help modal updates, then add shortcuts incrementally
+D. Implement panning first as it's most requested
+E. Random order based on complexity
+➡️ Assumed: B — Zoom builds on existing performZoom infrastructure. Pan requires new Delta handling. Tools need UI changes.
