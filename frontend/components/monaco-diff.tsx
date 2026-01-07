@@ -79,6 +79,15 @@ export function MonacoDiff({
       dockerfile: "dockerfile",
       tf: "terraform",
       tfvars: "terraform",
+      // Elm uses F# highlighting as closest ML-family match
+      elm: "fsharp",
+      // Haskell-like languages
+      hs: "fsharp",
+      haskell: "fsharp",
+      ml: "fsharp",
+      ocaml: "fsharp",
+      fs: "fsharp",
+      fsx: "fsharp",
     };
 
     return languageMap[ext || ""] || "plaintext";
