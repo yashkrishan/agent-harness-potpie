@@ -14,26 +14,30 @@ class TestCommand(BaseModel):
 
 @router.post("/run-command")
 async def run_test_command(project_id: int, test_cmd: TestCommand, db: Session = Depends(get_db)):
-    # Hardcoded for demo - fraud detection pipeline tests
+    # Hardcoded for demo - Elm keyboard shortcuts tests
     import time
     time.sleep(2)  # Simulate test execution
-    
-    # Hardcoded test results
-    test_output = """Running fraud detection tests...
 
-test_fraud_scorer.py::test_high_amount_transaction PASSED
-test_fraud_scorer.py::test_velocity_check PASSED
-test_fraud_scorer.py::test_location_anomaly PASSED
-test_fraud_scorer.py::test_card_age_check PASSED
-test_fraud_scorer.py::test_time_of_day_check PASSED
+    # Hardcoded test results for Elm hotkey implementation
+    test_output = """Running Elm keyboard shortcuts tests...
 
-test_fraud_detection_service.py::test_analyze_transaction PASSED
-test_fraud_detection_service.py::test_decision_engine PASSED
+HotkeyTest.elm::test_zoom_in_increases_zoom PASSED
+HotkeyTest.elm::test_zoom_out_decreases_zoom PASSED
+HotkeyTest.elm::test_zoom_reset_sets_to_one PASSED
+HotkeyTest.elm::test_zoom_clamps_to_max PASSED
+HotkeyTest.elm::test_zoom_clamps_to_min PASSED
 
-test_models.py::test_transaction_model PASSED
+HotkeyTest.elm::test_pan_up_decreases_top PASSED
+HotkeyTest.elm::test_pan_down_increases_top PASSED
+HotkeyTest.elm::test_pan_left_decreases_left PASSED
+HotkeyTest.elm::test_pan_right_increases_left PASSED
 
-======================== 8 passed in 2.34s ========================"""
-    
+HotkeyTest.elm::test_tool_select_sets_cursor_mode PASSED
+HotkeyTest.elm::test_tool_drag_sets_cursor_mode PASSED
+HotkeyTest.elm::test_toggle_table_list PASSED
+
+======================== 12 passed in 1.84s ========================"""
+
     log = ExecutionLog(
         project_id=project_id,
         task_id=0,  # General test
@@ -42,7 +46,7 @@ test_models.py::test_transaction_model PASSED
     )
     db.add(log)
     db.commit()
-    
+
     return {
         "stdout": test_output,
         "stderr": "",
@@ -53,28 +57,28 @@ test_models.py::test_transaction_model PASSED
 async def get_test_logs(project_id: int, db: Session = Depends(get_db)):
     # Hardcoded for demo
     from datetime import datetime, timedelta
-    
+
     logs = db.query(ExecutionLog).filter(
         ExecutionLog.project_id == project_id,
         ExecutionLog.log_type == "test_result"
     ).order_by(ExecutionLog.created_at.desc()).limit(50).all()
-    
+
     # If no logs, return hardcoded demo logs
     if not logs:
         demo_logs = [
             {
                 "id": 1,
-                "content": "Command: npm test\nOutput: Running fraud detection tests...\n\ntest_fraud_scorer.py::test_high_amount_transaction PASSED\ntest_fraud_scorer.py::test_velocity_check PASSED\n\n======================== 8 passed in 2.34s ========================\n\nError: \nReturn code: 0",
+                "content": "Command: elm-test\nOutput: Running Elm keyboard shortcuts tests...\n\nHotkeyTest.elm::test_zoom_in_increases_zoom PASSED\nHotkeyTest.elm::test_pan_up_decreases_top PASSED\n\n======================== 12 passed in 1.84s ========================\n\nError: \nReturn code: 0",
                 "created_at": (datetime.now() - timedelta(minutes=5)).isoformat()
             },
             {
                 "id": 2,
-                "content": "Command: python -m pytest tests/\nOutput: Running test suite...\n\nAll tests passed successfully!\n\nError: \nReturn code: 0",
+                "content": "Command: npm run test:elm\nOutput: Running Elm test suite...\n\nAll hotkey handler tests passed successfully!\n\nError: \nReturn code: 0",
                 "created_at": (datetime.now() - timedelta(minutes=10)).isoformat()
             }
         ]
         return {"logs": demo_logs}
-    
+
     return {
         "logs": [{
             "id": log.id,
@@ -82,4 +86,3 @@ async def get_test_logs(project_id: int, db: Session = Depends(get_db)):
             "created_at": log.created_at.isoformat()
         } for log in logs]
     }
-

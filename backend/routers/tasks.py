@@ -18,169 +18,104 @@ class PhaseItem(BaseModel):
     description: str
     tasks: List[TaskItem]
 
-# Intelligent phases and tasks for fraud detection demo - showing deep understanding
+# Intelligent phases and tasks for Azimutt keyboard shortcuts demo
 DEMO_PHASES = {
     "phases": [
         {
-            "name": "Phase 1: Core Infrastructure & Data Models",
-            "description": "Establish foundational architecture with PCI-DSS compliant data models, service orchestration pattern, and robust API design with proper validation and error handling",
+            "name": "Phase 1: Zoom Shortcuts Implementation",
+            "description": "Add keyboard shortcuts for zoom in/out using = and - keys, reusing existing zoom functionality in the Elm canvas module",
             "tasks": [
                 {
-                    "name": "Design and implement FraudDetectionService orchestrator",
-                    "description": "Create main service class that orchestrates FraudScorer and DecisionEngine following the service pattern. Implement async/await for concurrent heuristic execution. Include proper error handling and graceful degradation.",
-                    "file_path": "services/fraud_detection_service.py"
+                    "name": "Add zoom hotkey definitions to Conf.elm",
+                    "description": "Add hotkey entries for 'zoom-in' mapped to '=' and '+' keys, and 'zoom-out' mapped to '-' key. Use the existing hotkey record structure with key, ctrl, alt, shift, meta, target, onInput, preventDefault fields.",
+                    "file_path": "frontend/src/Conf.elm"
                 },
                 {
-                    "name": "Create PCI-DSS compliant transaction models",
-                    "description": "Design SQLAlchemy models with card_number_hash (never store full numbers), transaction metadata, fraud_score, risk_level, decision, and reasoning fields. Include indexes for performance-critical queries. Add created_at for 90-day retention policy.",
-                    "file_path": "models/transaction.py"
+                    "name": "Implement zoom hotkey handlers in Hotkey.elm",
+                    "description": "Add case handlers for 'zoom-in' and 'zoom-out' in the handleHotkey function. Calculate zoom delta as current zoom * 0.1 (10% increment). Emit Zoom message with positive delta for zoom-in, negative for zoom-out.",
+                    "file_path": "frontend/src/PagesComponents/Organization_/Project_/Updates/Hotkey.elm"
                 },
                 {
-                    "name": "Implement FraudEvent model for audit trail",
-                    "description": "Create model to store individual heuristic scores, reasoning, and contributions for complete auditability. Link to transactions with foreign keys. Support score breakdown queries for analysis.",
-                    "file_path": "models/fraud_event.py"
-                },
-                {
-                    "name": "Build REST API with comprehensive validation",
-                    "description": "Implement FastAPI endpoints with Pydantic models for request validation. Return structured responses with fraud_score, risk_level, decision, and reasoning. Handle missing fields gracefully. Implement idempotency for duplicate requests.",
-                    "file_path": "api/fraud_detection.py"
-                },
-                {
-                    "name": "Set up database connection pooling and Redis cache",
-                    "description": "Configure SQLAlchemy connection pool for 10,000+ transactions/minute. Set up optional Redis cache for frequently accessed user history. Implement cache invalidation on new transactions.",
-                    "file_path": "config/database.py"
-                }
-            ]
-        },
-            {
-            "name": "Phase 2: Heuristic Rules Engine & Weighted Scoring",
-            "description": "Implement sophisticated heuristics with configurable weights, parallel execution, and statistical analysis. Build weighted aggregation system that demonstrates understanding of fraud patterns",
-                "tasks": [
-                {
-                    "name": "Implement velocity check with database locks",
-                    "description": "Create heuristic that checks transaction frequency across configurable time windows (5min, 15min, 1hr). Use database locks to prevent race conditions in concurrent transaction counting. Return score (0-100) and reasoning.",
-                    "file_path": "services/heuristics/velocity_check.py"
-                },
-                {
-                    "name": "Build geographic anomaly detection with user profiling",
-                    "description": "Detect unusual locations and rapid location changes. Build user travel profiles over time to reduce false positives for legitimate business travelers. Handle missing location data gracefully.",
-                    "file_path": "services/heuristics/geographic_check.py"
-                },
-                {
-                    "name": "Create statistical amount anomaly detection",
-                    "description": "Use mean, median, and standard deviation of user's historical amounts to detect outliers. Handle new users with lower thresholds. Return statistical confidence in reasoning.",
-                    "file_path": "services/heuristics/amount_check.py"
-            },
-            {
-                    "name": "Implement card pattern matching with hash-based lookup",
-                    "description": "Check card hashes against known stolen card database. Use efficient hash-based lookups. Never store full card numbers. Return pattern match details in reasoning.",
-                    "file_path": "services/heuristics/card_pattern_check.py"
-                },
-                {
-                    "name": "Build device fingerprinting with GDPR compliance",
-                    "description": "Collect device fingerprints for risk signals. Implement GDPR-compliant storage with consent tracking and deletion capabilities. Handle missing fingerprints gracefully.",
-                    "file_path": "services/heuristics/device_fingerprint.py"
-                },
-                {
-                    "name": "Implement IP reputation checking",
-                    "description": "Check IP addresses against reputation databases. Cache results to meet 100ms SLA. Handle timeout/errors gracefully without blocking transactions.",
-                    "file_path": "services/heuristics/ip_reputation.py"
-                },
-                {
-                    "name": "Create FraudScorer with weighted aggregation",
-                    "description": "Implement weighted average calculation: final_score = Σ(heuristic_score × weight). Load configurable weights from database. Return complete score breakdown for audit. Support dynamic weight adjustment.",
-                    "file_path": "services/fraud_scorer.py"
-                },
-                {
-                    "name": "Build parallel heuristic execution system",
-                    "description": "Execute independent heuristics concurrently using asyncio to achieve <100ms response time. Aggregate results into FraudScorer. Handle individual heuristic failures gracefully.",
-                    "file_path": "services/heuristic_executor.py"
+                    "name": "Verify zoom limits and history integration",
+                    "description": "Ensure zoom respects min (0.001) and max (5) limits defined in Conf.canvas.zoom. Verify that keyboard zoom creates history entries for undo/redo support by checking performZoom function integration.",
+                    "file_path": "frontend/src/PagesComponents/Organization_/Project_/Updates/Canvas.elm"
                 }
             ]
         },
         {
-            "name": "Phase 3: Decision Engine & Risk Thresholds",
-            "description": "Implement intelligent decision logic with configurable thresholds, fail-open patterns for timeouts, and comprehensive reasoning for each decision",
-                "tasks": [
+            "name": "Phase 2: Canvas Panning Implementation",
+            "description": "Add Shift+Arrow key shortcuts for panning the canvas, creating new PanCanvas message type and handler",
+            "tasks": [
                 {
-                    "name": "Create configurable risk threshold system",
-                    "description": "Implement dynamic threshold configuration (low <60, medium 60-79, high ≥80) stored in database. Support threshold updates without code deployment. Include threshold reasoning in responses.",
-                    "file_path": "services/risk_threshold.py"
+                    "name": "Add pan hotkey definitions with Shift modifier",
+                    "description": "Add hotkey entries for 'pan-up', 'pan-down', 'pan-left', 'pan-right' mapped to Arrow keys with shift=True modifier. This avoids conflict with existing arrow keys that move selected tables.",
+                    "file_path": "frontend/src/Conf.elm"
                 },
                 {
-                    "name": "Build DecisionEngine with holistic risk assessment",
-                    "description": "Implement decision logic that considers weighted fraud score, not single-factor decisions. Categorize as low/medium/high risk. Make blocking decisions for high-risk (≥80), flagging for medium-risk (60-79), allow low-risk (<60).",
-                    "file_path": "services/decision_engine.py"
+                    "name": "Create PanCanvas message type in Models.elm",
+                    "description": "Add 'PanCanvas Delta' variant to the Msg type union. Delta type should contain dx and dy Float fields for horizontal and vertical pan amounts.",
+                    "file_path": "frontend/src/PagesComponents/Organization_/Project_/Models.elm"
                 },
                 {
-                    "name": "Implement transaction blocking with audit trail",
-                    "description": "Create automatic blocking for high-risk transactions. Log all blocking decisions with complete reasoning. Support manual override mechanism with audit logging.",
-                    "file_path": "services/transaction_blocker.py"
+                    "name": "Implement panCanvas function in Canvas.elm",
+                    "description": "Create panCanvas function that takes Delta and CanvasProps, returns updated CanvasProps with position moved by delta (adjusted for zoom level). Add history entry for undo support using Extra.history.",
+                    "file_path": "frontend/src/PagesComponents/Organization_/Project_/Updates/Canvas.elm"
                 },
                 {
-                    "name": "Build timeout and error handling with fail-open pattern",
-                    "description": "Implement timeout handling (150ms) that defaults to 'allow' with 'timeout_review' flag. Handle database unavailability with cached data fallback. Gracefully degrade individual heuristic failures.",
-                    "file_path": "services/error_handler.py"
-                },
-                {
-                    "name": "Create new user handling logic",
-                    "description": "Implement special handling for first-time users with lower risk thresholds. Collect additional verification data. Build user profile over time to reduce false positives.",
-                    "file_path": "services/new_user_handler.py"
-                },
-                {
-                    "name": "Implement international transaction rules",
-                    "description": "Create different heuristic weights and rules for international vs domestic transactions. Handle currency conversion. Apply stricter thresholds for international when configured.",
-                    "file_path": "services/international_rules.py"
+                    "name": "Add pan hotkey handlers in Hotkey.elm",
+                    "description": "Add case handlers for pan-up/down/left/right that emit PanCanvas message with 50px delta in appropriate direction. pan-up: dy=50, pan-down: dy=-50, pan-left: dx=50, pan-right: dx=-50.",
+                    "file_path": "frontend/src/PagesComponents/Organization_/Project_/Updates/Hotkey.elm"
                 }
-                ]
-            },
-            {
-            "name": "Phase 4: Integration, Monitoring & Compliance",
-            "description": "Build production-ready integration patterns, comprehensive monitoring for fraud detection metrics, and full compliance with PCI-DSS and GDPR requirements",
-                "tasks": [
+            ]
+        },
+        {
+            "name": "Phase 3: Tool & Feature Shortcuts",
+            "description": "Add keyboard shortcuts for arrange tables, tool switching, and table list toggle",
+            "tasks": [
                 {
-                    "name": "Create checkout service integration client",
-                    "description": "Build client library with retry logic, circuit breaker pattern, and standardized response handling. Support synchronous fraud checks with <100ms SLA. Implement fallback behavior for API failures.",
-                    "file_path": "integrations/checkout_client.py"
+                    "name": "Add arrange tables hotkey with Alt modifier",
+                    "description": "Add hotkey entry for 'arrange-tables' mapped to 'a' key with alt=True modifier. Handler should emit ArrangeTables message with AutoLayoutMethod.Dagre as default layout algorithm.",
+                    "file_path": "frontend/src/Conf.elm"
                 },
                 {
-                    "name": "Implement comprehensive transaction logging",
-                    "description": "Log all transactions with complete fraud analysis details, timestamps, decision reasoning, and score breakdowns. Support 90-day retention. Enable efficient querying for audits.",
-                    "file_path": "services/transaction_logger.py"
+                    "name": "Add tool switching hotkeys",
+                    "description": "Add 'tool-select' mapped to 'v' key (industry standard) and 'tool-drag' mapped to 'd' with alt=True modifier. Handlers emit CursorMode message with CursorMode.Select or CursorMode.Drag.",
+                    "file_path": "frontend/src/PagesComponents/Organization_/Project_/Updates/Hotkey.elm"
                 },
                 {
-                    "name": "Build metrics collection system",
-                    "description": "Track fraud detection rate, false positive rate, API response time (p95), system errors, and throughput. Integrate with Prometheus. Set up alerts for performance degradation below 90% detection rate.",
-                    "file_path": "services/metrics_collector.py"
-                },
-                {
-                    "name": "Create configuration management system",
-                    "description": "Allow updating heuristic weights, risk thresholds, and rules without code deployment. Support hot-reloading configuration. Validate changes before applying. Log all configuration changes.",
-                    "file_path": "services/config_manager.py"
-                },
-                {
-                    "name": "Implement request queuing and auto-scaling support",
-                    "description": "Build request queue for traffic spikes (10x normal volume). Design for horizontal scaling. Prioritize high-value transactions. Support auto-scaling infrastructure integration.",
-                    "file_path": "services/request_queue.py"
-                },
-                {
-                    "name": "Create false positive analysis and tuning system",
-                    "description": "Track false positive patterns. Provide analysis tools for adjusting thresholds and weights. Support A/B testing of configuration changes. Learn from override patterns.",
-                    "file_path": "services/false_positive_analyzer.py"
-                },
-                {
-                    "name": "Implement GDPR compliance for device fingerprints",
-                    "description": "Add consent tracking for device fingerprint storage. Implement right-to-deletion functionality. Support data export requests. Maintain audit trail of consent and deletions.",
-                    "file_path": "services/gdpr_compliance.py"
-                },
-                {
-                    "name": "Build audit trail and compliance reporting",
-                    "description": "Create comprehensive audit logs for PCI-DSS compliance. Support querying and reporting for compliance audits. Ensure all operations are logged with timestamps and user context.",
-                    "file_path": "services/audit_trail.py"
+                    "name": "Add table list toggle hotkey",
+                    "description": "Add 'toggle-table-list' mapped to 't' key. Handler emits DetailsSidebarMsg with DetailsSidebar.Toggle to open/close the table list sidebar panel.",
+                    "file_path": "frontend/src/PagesComponents/Organization_/Project_/Updates/Hotkey.elm"
                 }
-                ]
-            }
-        ]
+            ]
+        },
+        {
+            "name": "Phase 4: UI Updates & Documentation",
+            "description": "Update Help modal and button tooltips to make shortcuts discoverable, then update changelog",
+            "tasks": [
+                {
+                    "name": "Update Help modal with new shortcuts",
+                    "description": "Add entries to shortcuts list in Help.elm viewShortcuts function: zoom (=/-), pan (Shift+Arrows), arrange (Alt+a), tools (v, Alt+d), table list (t). Group by category for better organization.",
+                    "file_path": "frontend/src/PagesComponents/Organization_/Project_/Views/Modals/Help.elm"
+                },
+                {
+                    "name": "Update button tooltips with shortcut hints",
+                    "description": "Modify tooltip strings in Commands.elm to include keyboard shortcuts: 'Zoom in (=)', 'Zoom out (-)', 'Select tool (v)', 'Drag tool (Alt+d)', 'Arrange tables (Alt+a)', 'Table list (t)'.",
+                    "file_path": "frontend/src/PagesComponents/Organization_/Project_/Views/Commands.elm"
+                },
+                {
+                    "name": "Write unit tests for new hotkey handlers",
+                    "description": "Create HotkeyTest.elm with tests for zoom-in/out, pan directions, tool switching. Test edge cases: zoom at limits, pan with no erd, arrange with no tables. Use elm-test framework.",
+                    "file_path": "frontend/tests/PagesComponents/Organization_/Project_/Updates/HotkeyTest.elm"
+                },
+                {
+                    "name": "Update CHANGELOG with feature entry",
+                    "description": "Add entry under [Unreleased]: 'Added: Keyboard shortcuts for zoom (=/-), canvas panning (Shift+Arrows), arrange tables (Alt+a), tool switching (v, Alt+d), table list (t). Fixes #350.'",
+                    "file_path": "CHANGELOG.md"
+                }
+            ]
+        }
+    ]
 }
 
 @router.post("/generate")

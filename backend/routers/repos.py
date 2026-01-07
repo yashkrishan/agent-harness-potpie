@@ -31,37 +31,37 @@ async def select_repo(project_id: int, repo: RepoSelect, db: Session = Depends(g
     project = db.query(Project).filter(Project.id == project_id).first()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
-    
+
     # For demo: create a mock repo directory structure
     os.makedirs(REPOS_DIR, exist_ok=True)
-    
+
     # Extract repo name from URL or use default
-    repo_name = repo.repo_url.split("/")[-1].replace(".git", "") if repo.repo_url else "checkout-service"
+    repo_name = repo.repo_url.split("/")[-1].replace(".git", "") if repo.repo_url else "azimutt"
     repo_path = os.path.join(REPOS_DIR, f"{project_id}_{repo_name}")
-    
-    # Create mock directory structure for demo
+
+    # Create mock directory structure for demo (Azimutt Elm project)
     try:
         if os.path.exists(repo_path):
             shutil.rmtree(repo_path)
-        
+
         os.makedirs(repo_path, exist_ok=True)
-        os.makedirs(os.path.join(repo_path, "api"), exist_ok=True)
-        os.makedirs(os.path.join(repo_path, "services"), exist_ok=True)
-        os.makedirs(os.path.join(repo_path, "models"), exist_ok=True)
-        
+        os.makedirs(os.path.join(repo_path, "frontend", "src"), exist_ok=True)
+        os.makedirs(os.path.join(repo_path, "frontend", "src", "PagesComponents", "Organization_", "Project_", "Updates"), exist_ok=True)
+        os.makedirs(os.path.join(repo_path, "frontend", "ts-src"), exist_ok=True)
+
         # Create a basic README
         with open(os.path.join(repo_path, "README.md"), 'w') as f:
-            f.write("# Checkout Service\n\nPayment processing service with fraud detection capabilities.\n")
-        
-        # Create basic requirements.txt
-        with open(os.path.join(repo_path, "requirements.txt"), 'w') as f:
-            f.write("fastapi==0.104.1\nsqlalchemy==2.0.23\n")
-        
-        project.repo_url = repo.repo_url or "https://github.com/demo/checkout-service"
+            f.write("# Azimutt\n\nDatabase schema explorer and visualizer with keyboard shortcuts support.\n")
+
+        # Create basic elm.json
+        with open(os.path.join(repo_path, "frontend", "elm.json"), 'w') as f:
+            f.write('{"type": "application", "elm-version": "0.19.1"}\n')
+
+        project.repo_url = repo.repo_url or "https://github.com/azimuttapp/azimutt"
         project.repo_path = repo_path
         project.status = "repo_selected"
         db.commit()
-        
+
         return {
             "repo_path": repo_path,
             "status": "cloned"
@@ -74,49 +74,47 @@ async def analyze_repo(project_id: int, db: Session = Depends(get_db)):
     project = db.query(Project).filter(Project.id == project_id).first()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
-    
-    # Hardcoded repo analysis for demo (checkout service)
+
+    # Hardcoded repo analysis for demo (Azimutt Elm project)
     analysis = {
         "directory_structure": {
-            "checkout": {
-                "services": "directory",
-                "api": "directory",
-                "models": "directory",
-                "utils": "directory"
+            "frontend": {
+                "src": {
+                    "Conf.elm": "file",
+                    "PagesComponents": {
+                        "Organization_": {
+                            "Project_": {
+                                "Updates": {
+                                    "Canvas.elm": "file",
+                                    "Hotkey.elm": "file"
+                                }
+                            }
+                        }
+                    }
+                },
+                "ts-src": {
+                    "services": {
+                        "hotkeys.ts": "file"
+                    }
+                },
+                "elm.json": "file"
             },
-            "requirements.txt": "file",
             "README.md": "file"
         },
-        "tech_stack": ["Python", "FastAPI", "PostgreSQL"],
+        "tech_stack": ["Elm", "TypeScript", "Vite", "TailwindCSS"],
         "routing": [
-            "api/checkout_routes.py",
-            "api/payment_routes.py"
+            "frontend/src/PagesComponents/Organization_/Project_/Models.elm"
         ],
-        "components": [],
-        "apis": [
-            "api/checkout_routes.py",
-            "api/payment_routes.py",
-            "services/payment_service.py"
+        "components": [
+            "frontend/src/Components/Atoms/Button.elm",
+            "frontend/src/Components/Molecules/Tooltip.elm"
         ],
+        "apis": [],
         "models": [
-            "models/payment.py",
-            "models/order.py"
+            "frontend/src/Models/Project.elm",
+            "frontend/src/Models/Canvas.elm"
         ],
-        "db_schema": {
-            "payments": {
-                "id": "UUID",
-                "amount": "DECIMAL",
-                "currency": "VARCHAR",
-                "status": "VARCHAR",
-                "created_at": "TIMESTAMP"
-            },
-            "orders": {
-                "id": "UUID",
-                "user_id": "VARCHAR",
-                "total_amount": "DECIMAL",
-                "status": "VARCHAR"
-            }
-        }
+        "db_schema": {}
     }
-    
+
     return analysis

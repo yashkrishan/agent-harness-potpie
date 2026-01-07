@@ -412,7 +412,7 @@ function DesignPageContent() {
                           style={{ width: `${100 / Math.min(phases.length, 4)}%` }}
                         >
                           <div
-                            className={`relative p-2 rounded-md border cursor-pointer transition-all duration-300 bg-white ${
+                            className={`relative p-3 rounded-lg border cursor-pointer transition-all duration-300 bg-white ${
                               selectedPhaseId === phase.id
                                 ? "border-blue-500 bg-blue-50 shadow-md"
                                 : "border-gray-200 hover:border-blue-300 hover:bg-gray-50"
@@ -424,13 +424,13 @@ function DesignPageContent() {
                           >
                             <div className="flex items-start gap-1.5">
                               <div className="flex-1 min-w-0">
-                                <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                                <div className="text-[10px] font-medium text-gray-500 uppercase tracking-wide mb-1">
                                   Phase {idx + 1}
                                 </div>
-                                <h4 className="font-semibold text-xs text-gray-900 mb-0.5 line-clamp-1 leading-tight">
+                                <h4 className="font-semibold text-sm text-gray-900 mb-0.5 line-clamp-1 leading-snug">
                                   {phase.name.replace(/^Phase \d+:\s*/i, '')}
                                 </h4>
-                                <p className="text-[10px] text-gray-600 mb-1 leading-tight line-clamp-1">
+                                <p className="text-xs text-gray-500 leading-normal line-clamp-2">
                                   {phase.description}
                                 </p>
                               </div>

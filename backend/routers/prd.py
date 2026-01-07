@@ -19,280 +19,288 @@ class PlanSectionApproval(BaseModel):
     section: str
     approved: bool
 
-# Comprehensive Plan document for fraud detection demo
-COMPREHENSIVE_PLAN_DOCUMENT = """# Implementation Plan: Fraud Detection Pipeline
+# Comprehensive Plan document for Azimutt keyboard shortcuts demo
+COMPREHENSIVE_PLAN_DOCUMENT = """# Implementation Plan: Azimutt Keyboard Shortcuts (Issue #350)
 
 ## 1. Problem Statement
 
-The checkout service currently lacks automated fraud detection capabilities, exposing the business to significant financial risks from fraudulent credit card transactions. Manual review processes are not scalable, cause delays for legitimate customers, and result in revenue loss from both fraudulent transactions and false positives that block legitimate purchases.
+Azimutt users currently lack keyboard shortcuts for common canvas navigation operations, requiring mouse-based interactions for zooming, panning, and tool switching. This reduces productivity for power users who prefer keyboard-driven workflows.
+
+**Requested Features:**
+
+**Must Haves:**
+- Zoom In/Out using `-` and `=` keys
+- Pan Canvas using arrow keys
+
+**Nice to Haves:**
+- Arrange Tables shortcut (like formatting code)
+- Switch between Select/Drag tools
+- Open Table List shortcut
 
 **Current State:**
-- No real-time fraud detection during checkout
-- Manual review required for suspicious transactions
-- High false positive rate affecting customer experience
-- Limited visibility into fraud patterns and trends
-- Inability to scale fraud detection with transaction volume growth
+- Zoom only via `Ctrl+Scroll` or UI buttons
+- No keyboard panning (arrow keys move selected tables)
+- Tool switching only via mouse clicks
+- Table list only accessible via menu button
 
 **Impact:**
-- Financial losses from undetected fraudulent transactions
-- Customer friction from manual review delays
-- Increased operational costs for manual review teams
-- Loss of legitimate sales due to false positives
-- Compliance risks with payment industry standards
+- Slower navigation for keyboard-preferring users
+- Inconsistent with industry-standard design tools (Figma, Sketch)
+- Reduced accessibility for users with mouse limitations
 
 ## 2. Goal
 
-Build a comprehensive, real-time fraud detection pipeline that automatically analyzes credit card payments using detailed heuristics, provides accurate risk scoring, and enables automated decision-making to protect revenue while maintaining excellent customer experience.
+Implement comprehensive keyboard shortcuts for canvas navigation and tool access, following industry conventions while maintaining backward compatibility with existing shortcuts.
 
 **Success Metrics:**
-- Reduce fraudulent transaction approval rate by 90%
-- Maintain false positive rate below 2%
-- Process fraud checks in under 100ms
-- Handle 10,000+ transactions per minute
-- Achieve 95%+ fraud detection accuracy
+- All 6 new shortcut categories implemented
+- Zero regression in existing shortcuts
+- Shortcuts discoverable via Help modal and tooltips
+- Works across Chrome, Firefox, Safari, Edge
 
-## 3. Scope
+## 3. Clarifying Questions & Decisions
+
+### Q1: Arrow Key Behavior Conflict
+
+**Question:** Arrow keys are currently mapped to move selected tables. How should we handle canvas panning?
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| A) Replace table movement | Arrow keys pan canvas; remove table movement | |
+| **B) Use modifier key for panning** | `Shift+Arrow` for panning, keep current behavior | ✅ **SELECTED** |
+| C) Context-aware | Pan when nothing selected, move when table selected | |
+
+**Rationale:** Modifier key approach maintains backward compatibility and is consistent with design tool conventions.
+
+---
+
+### Q2: Zoom Key Mapping
+
+**Question:** Which keys should control zoom?
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| A) `-` for out, `=` for in | As suggested in issue | |
+| B) `-` for out, `+` for in | More intuitive symbols | |
+| **C) `-` for out, `=`/`+` both for in** | Maximum flexibility | ✅ **SELECTED** |
+
+**Rationale:** Supporting both `=` and `+` (Shift+=) provides the best user experience across keyboard layouts.
+
+---
+
+### Q3: Zoom Increment Amount
+
+**Question:** What zoom increment should keyboard shortcuts use?
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| **A) 10% increments** | Same as UI buttons | ✅ **SELECTED** |
+| B) 25% increments | Larger jumps | |
+| C) 5% increments | Finer control | |
+
+**Rationale:** Consistency with existing button behavior provides predictable UX.
+
+---
+
+### Q4: Canvas Pan Speed
+
+**Question:** How many pixels should each arrow key press pan?
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| **A) 50px per keypress** | Noticeable but controlled | ✅ **SELECTED** |
+| B) 100px per keypress | Faster navigation | |
+| C) 10px (grid-aligned) | Match table movement | |
+
+**Rationale:** 50px provides a good balance between speed and control.
+
+---
+
+### Q5: Arrange Tables Shortcut
+
+**Question:** How should the arrange tables shortcut work?
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| A) Opens dropdown menu | `a` opens layout selection | |
+| **B) Direct trigger with default** | `Alt+a` applies Dagre layout | ✅ **SELECTED** |
+| C) Skip for now | Focus on must-haves | |
+
+**Rationale:** Direct trigger with Alt modifier avoids conflicts and provides quick access.
+
+---
+
+### Q6: Select/Drag Tool Toggle
+
+**Question:** What shortcuts for tool switching?
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| **A) `v` for select, `Alt+d` for drag** | Industry standard (Figma-like) | ✅ **SELECTED** |
+| B) Space to toggle | Hold space for drag | |
+| C) Number keys | 1=select, 2=drag | |
+
+**Rationale:** `v` is industry standard. Using `Alt+d` avoids conflict with `d` key (if used elsewhere).
+
+---
+
+### Q7: Table List Shortcut
+
+**Question:** What shortcut for opening the table list?
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| **A) `t` key** | `t` for "table list" | ✅ **SELECTED** |
+| B) `l` key | `l` for "list" | |
+| C) `Tab` key | Toggle sidebar | |
+
+**Rationale:** `t` provides intuitive mnemonic and doesn't conflict with existing shortcuts.
+
+---
+
+### Q8: Discoverability
+
+**Question:** How should new shortcuts be communicated to users?
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| A) Help dialog only | Add to existing `?` help | |
+| B) Button tooltips only | Show in hover tooltips | |
+| **C) Both** | Maximum discoverability | ✅ **SELECTED** |
+
+**Rationale:** Both methods ensure users can discover shortcuts whether exploring UI or seeking help.
+
+## 4. Scope
 
 ### In Scope
 
 **Core Functionality:**
-- Real-time fraud detection during checkout flow
-- Multi-heuristic fraud scoring system
-- Automated transaction blocking for high-risk transactions
-- Transaction flagging for medium-risk manual review
-- Comprehensive transaction logging and audit trail
-- Configurable risk thresholds and rules
-- Integration with checkout service via REST API
-- Historical transaction analysis for pattern detection
-
-**Heuristic Rules:**
-- Velocity checks (transaction frequency analysis)
-- Geographic anomaly detection (location-based risk)
-- Amount anomaly detection (unusual transaction amounts)
-- Card pattern matching (known fraud patterns)
-- Device fingerprinting (device-based risk signals)
-- IP address reputation checking
-- Time-of-day analysis
-- User behavior pattern matching
+- Zoom in/out keyboard shortcuts (`=`/`+`/`-`)
+- Canvas panning with `Shift+Arrow` keys
+- Arrange tables shortcut (`Alt+a`)
+- Tool switching (`v` for select, `Alt+d` for drag)
+- Table list toggle (`t`)
+- Help modal updates
+- Button tooltip updates
 
 **Technical Components:**
-- Fraud detection service (Python/FastAPI)
-- Database models for transactions and fraud events
-- RESTful API endpoints
-- Configuration management system
-- Metrics and monitoring infrastructure
-- Logging and audit systems
+- Hotkey definitions in `Conf.elm`
+- Handlers in `Hotkey.elm`
+- New `PanCanvas` message type
+- `panCanvas` function in `Canvas.elm`
+- Updated `Help.elm` shortcuts section
+- Updated `Commands.elm` tooltips
 
-### Out of Scope (Future Enhancements)
+### Out of Scope
 
-- Machine learning models (Phase 2)
-- Integration with external fraud detection services (Phase 2)
-- Manual review interface for flagged transactions (separate feature)
-- Automated refund processing for fraudulent transactions
-- Real-time fraud pattern learning
-- Multi-currency fraud detection rules
-- Advanced device fingerprinting
-- Biometric verification
-- Customer communication for blocked transactions
+- Custom key binding configuration
+- Keyboard shortcut preferences/settings
+- Touch/gesture controls
+- Gamepad support
 
-## 4. Requirements
-
-### 4.1 Functional Requirements
-
-**FR-1: Transaction Analysis**
-- System MUST analyze credit card transactions in real-time during checkout
-- System MUST support multiple payment gateways (Stripe, PayPal, etc.)
-- System MUST process transactions within 100ms SLA
-- System MUST handle concurrent transaction analysis
-
-**FR-2: Heuristic Rules Engine**
-- System MUST implement velocity checks (transactions per time period)
-- System MUST detect geographic anomalies (unusual locations, rapid location changes)
-- System MUST identify amount anomalies (unusually high/low amounts)
-- System MUST check against known card patterns and stolen card databases
-- System MUST perform device fingerprinting analysis
-- System MUST check IP address reputation
-- System MUST analyze transaction timing patterns
-- Each heuristic MUST return a risk score (0-100) and reasoning
-
-**FR-3: Fraud Scoring System**
-- System MUST aggregate heuristic scores into unified fraud risk score
-- System MUST apply configurable weights to each heuristic
-- System MUST calculate final score as weighted average
-- System MUST provide score breakdown for audit purposes
-- System MUST support dynamic weight adjustment
-
-**FR-4: Decision Engine**
-- System MUST categorize transactions as low, medium, or high risk
-- System MUST automatically block high-risk transactions (score ≥ 80)
-- System MUST flag medium-risk transactions (score 60-79) for review
-- System MUST allow low-risk transactions (score < 60) to proceed
-- System MUST provide clear reasoning for each decision
-- System MUST support configurable thresholds
-
-**FR-5: Integration**
-- System MUST provide RESTful API for checkout service integration
-- System MUST support synchronous fraud checks
-- System MUST support webhook-based async processing (optional)
-- System MUST return standardized response format
-- System MUST handle API failures gracefully with fallback behavior
-
-**FR-6: Data Management**
-- System MUST store all transaction records
-- System MUST log all fraud detection events
-- System MUST maintain 90 days of transaction history
-- System MUST support transaction querying and retrieval
-- System MUST provide audit trail for compliance
-
-### 4.2 Non-Functional Requirements
-
-**NFR-1: Performance**
-- Response time: < 100ms for fraud check (p95)
-- Throughput: 10,000 transactions/minute
-- Database query time: < 50ms for historical lookups
-- API availability: 99.9% uptime
-
-**NFR-2: Scalability**
-- Support horizontal scaling
-- Handle traffic spikes (10x normal volume)
-- Database connection pooling
-- Caching for frequently accessed data
-
-**NFR-3: Reliability**
-- Graceful degradation on service failures
-- Automatic retry mechanisms
-- Circuit breaker pattern for external dependencies
-- Data consistency guarantees
-
-**NFR-4: Security**
-- Encrypt sensitive card data (PCI-DSS compliance)
-- Secure API authentication
-- Audit logging for all operations
-- Rate limiting to prevent abuse
-
-**NFR-5: Maintainability**
-- Configuration-driven rules (no code deployment for rule changes)
-- Comprehensive logging and monitoring
-- Clear error messages and debugging information
-- Well-documented API and codebase
-
-## 5. Edge Cases
-
-**EC-1: Network Timeout**
-- If fraud check times out, default to "allow" with flag for review
-- Log timeout event for analysis
-- Implement retry mechanism with exponential backoff
-
-**EC-2: Database Unavailability**
-- Use cached data when available
-- Fallback to basic heuristics without historical data
-- Log database errors for monitoring
-
-**EC-3: Invalid Transaction Data**
-- Validate all required fields before processing
-- Return clear error messages for invalid data
-- Log validation failures
-
-**EC-4: Concurrent Transactions**
-- Handle race conditions in velocity checks
-- Use database locks for critical sections
-- Implement idempotency for duplicate requests
-
-**EC-5: High Traffic Spikes**
-- Implement request queuing
-- Auto-scale infrastructure
-- Prioritize high-value transactions
-
-**EC-6: False Positives**
-- Provide override mechanism for legitimate transactions
-- Learn from override patterns
-- Adjust thresholds based on false positive analysis
-
-**EC-7: New User Transactions**
-- Special handling for first-time users
-- Lower risk threshold for new accounts
-- Collect additional verification data
-
-**EC-8: International Transactions**
-- Different rules for international vs domestic
-- Currency conversion considerations
-- Time zone handling
-
-## 6. Acceptance Criteria
-
-**AC-1: Fraud Detection Accuracy**
-- ✅ System correctly identifies 95%+ of fraudulent transactions
-- ✅ False positive rate is below 2%
-- ✅ High-risk transactions are blocked automatically
-- ✅ Medium-risk transactions are flagged for review
-
-**AC-2: Performance**
-- ✅ Fraud check API responds within 100ms (p95)
-- ✅ System handles 10,000 transactions/minute
-- ✅ Database queries complete within 50ms
-- ✅ No degradation under 10x normal load
-
-**AC-3: Integration**
-- ✅ Checkout service successfully integrates with fraud API
-- ✅ API returns standardized response format
-- ✅ Error handling works correctly
-- ✅ Fallback behavior functions as expected
-
-**AC-4: Configuration**
-- ✅ Risk thresholds can be updated without code deployment
-- ✅ Heuristic weights can be adjusted dynamically
-- ✅ New heuristics can be added via configuration
-- ✅ Changes take effect within 5 minutes
-
-**AC-5: Monitoring**
-- ✅ All transactions are logged
-- ✅ Metrics are collected and displayed
-- ✅ Alerts trigger for anomalies
-- ✅ Audit trail is complete and searchable
-
-**AC-6: Data Management**
-- ✅ Transaction history is maintained for 90 days
-- ✅ Fraud events are properly linked to transactions
-- ✅ Data can be queried efficiently
-- ✅ Compliance requirements are met
-
-## 7. Technical Architecture
+## 5. Technical Architecture
 
 **Technology Stack:**
-- Backend: Python 3.9+, FastAPI
-- Database: PostgreSQL with SQLAlchemy ORM
-- Caching: Redis (optional, for performance)
-- API: RESTful with OpenAPI documentation
-- Monitoring: Prometheus metrics, structured logging
+- Language: Elm
+- Framework: Elm Architecture (TEA)
+- Hotkey System: TypeScript event listener + Elm ports
+- Testing: Elm Test
 
-**Service Architecture:**
-- Microservice design for independent scaling
-- Event-driven architecture for async processing
-- Configuration service for dynamic rule management
-- Metrics service for observability
+**Module Structure:**
+```
+frontend/src/
+├── Conf.elm                    (MODIFY - add hotkey definitions)
+├── PagesComponents/Organization_/Project_/
+│   ├── Models.elm              (MODIFY - add PanCanvas Msg)
+│   ├── Updates.elm             (MODIFY - add handler)
+│   ├── Updates/
+│   │   ├── Hotkey.elm          (MODIFY - add case handlers)
+│   │   └── Canvas.elm          (MODIFY - add panCanvas)
+│   └── Views/
+│       ├── Modals/Help.elm     (MODIFY - add shortcuts)
+│       └── Commands.elm        (MODIFY - add tooltips)
+```
 
-## 8. Implementation Phases
+## 6. Existing Shortcuts Reference
 
-**Phase 1: Core Infrastructure** (Week 1-2)
-- Database models and schema
-- Basic API structure
-- Service framework
+| Shortcut | Action |
+|----------|--------|
+| `/` | Open search |
+| `n` | Open notes |
+| `m` | Create memo |
+| `c` | Collapse element |
+| `s` | Show element |
+| `h`, `Backspace`, `Delete` | Hide element |
+| `↑↓←→` | Move selected tables |
+| `Ctrl+0` | Reset zoom to 100% |
+| `Ctrl+z` | Undo |
+| `?` | Open help |
 
-**Phase 2: Heuristic Rules** (Week 3-4)
-- Implement all heuristic checks
-- Fraud scoring engine
-- Testing and validation
+## 7. Implementation Phases
 
-**Phase 3: Decision Engine** (Week 5)
-- Risk threshold management
-- Decision logic
-- Transaction blocking
+**Phase 1: Core Infrastructure Setup**
+- Analyze current hotkey system architecture
+- Identify integration points
+- Plan new Msg types
 
-**Phase 4: Integration & Monitoring** (Week 6)
-- Checkout service integration
-- Logging and metrics
-- Configuration management
-- Production deployment
+**Phase 2: Zoom Shortcuts (Must Have)**
+- Add `-`, `=`, `+` hotkey definitions
+- Implement zoom handlers
+- Reuse existing `zoomCanvas` function
+
+**Phase 3: Canvas Panning (Must Have)**
+- Add `Shift+Arrow` hotkey definitions
+- Create `PanCanvas` message type
+- Implement `panCanvas` function
+
+**Phase 4: Nice-to-Have Features**
+- Arrange tables shortcut (`Alt+a`)
+- Tool switching (`v`, `Alt+d`)
+- Table list toggle (`t`)
+
+**Phase 5: UI Enhancements**
+- Update Help modal with all shortcuts
+- Add shortcut hints to button tooltips
+
+**Phase 6: Testing & Documentation**
+- Write Elm unit tests
+- Cross-browser testing
+- Update CHANGELOG
+
+## 8. Acceptance Criteria
+
+**AC-1: Zoom Shortcuts**
+- ✅ `=` and `+` keys zoom in by 10%
+- ✅ `-` key zooms out by 10%
+- ✅ Zoom respects min/max limits
+- ✅ Works with undo/redo
+
+**AC-2: Canvas Panning**
+- ✅ `Shift+↑↓←→` pans canvas by 50px
+- ✅ Original arrow key behavior preserved
+- ✅ Works at any zoom level
+
+**AC-3: Tool Shortcuts**
+- ✅ `v` switches to Select mode
+- ✅ `Alt+d` switches to Drag mode
+- ✅ Current mode visually indicated
+
+**AC-4: Discoverability**
+- ✅ All shortcuts in Help modal
+- ✅ Tooltips show shortcuts
+- ✅ No browser shortcut conflicts
+
+## 9. Files to Modify
+
+| File | Changes |
+|------|---------|
+| `frontend/src/Conf.elm` | Add 9 hotkey definitions |
+| `frontend/src/.../Updates/Hotkey.elm` | Add 9 case handlers |
+| `frontend/src/.../Updates/Canvas.elm` | Add panCanvas function |
+| `frontend/src/.../Models.elm` | Add PanCanvas Msg |
+| `frontend/src/.../Views/Modals/Help.elm` | Add 7 shortcut entries |
+| `frontend/src/.../Views/Commands.elm` | Update 6 tooltips |
+| `CHANGELOG.md` | Add feature entries |
 """
 
 @router.post("/generate")
