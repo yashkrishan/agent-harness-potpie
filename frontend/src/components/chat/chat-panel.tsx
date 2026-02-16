@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { MessageSquare, Send } from 'lucide-react';
+import { MessageSquare } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -17,6 +17,8 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { ChatInput } from './chat-input';
+import { ApiKeyForm } from './api-key-form';
 
 /**
  * ChatPanel is the main container for the chatbot interface.
@@ -29,6 +31,15 @@ import { ScrollArea } from '@/components/ui/scroll-area';
  */
 export function ChatPanel() {
   const [isOpen, setIsOpen] = useState(false);
+  const [apiKey, setApiKey] = useState<string | null>(null);
+  const [input, setInput] = useState('');
+
+  const handleSend = () => {
+    if (!input.trim()) return;
+    // Logic for sending messages will be implemented in Task 4
+    console.log('Sending message:', input);
+    setInput('');
+  };
 
   return (
     <div className="fixed bottom-6 right-6 z-50">
@@ -59,39 +70,41 @@ export function ChatPanel() {
             <CardContent className="flex-1 p-0 overflow-hidden bg-background">
               <ScrollArea className="h-full">
                 <div className="flex flex-col gap-4 p-4">
-                  {/* 
-                    Placeholder for Chat Message List (Task 5).
-                    This area will eventually render the conversation history.
-                  */}
-                  <div className="flex flex-col items-center justify-center min-h-[400px] text-center space-y-4 py-10">
-                    <div className="p-4 rounded-full bg-muted/50">
-                      <MessageSquare className="h-8 w-8 text-muted-foreground/50" />
+                  {!apiKey ? (
+                    <div className="py-8">
+                      <ApiKeyForm onSubmit={setApiKey} />
                     </div>
-                    <div className="space-y-2">
-                      <p className="text-sm font-semibold">How can I help you today?</p>
-                      <p className="text-xs text-muted-foreground max-w-[240px] leading-relaxed mx-auto">
-                        I can help you navigate the workflow, explain project details, or perform actions based on your current page.
-                      </p>
-                    </div>
-                  </div>
+                  ) : (
+                    <>
+                      {/* 
+                        Placeholder for Chat Message List (Task 5).
+                        This area will eventually render the conversation history.
+                      */}
+                      <div className="flex flex-col items-center justify-center min-h-[400px] text-center space-y-4 py-10">
+                        <div className="p-4 rounded-full bg-muted/50">
+                          <MessageSquare className="h-8 w-8 text-muted-foreground/50" />
+                        </div>
+                        <div className="space-y-2">
+                          <p className="text-sm font-semibold">How can I help you today?</p>
+                          <p className="text-xs text-muted-foreground max-w-[240px] leading-relaxed mx-auto">
+                            I can help you navigate the workflow, explain project details, or perform actions based on your current page.
+                          </p>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </ScrollArea>
             </CardContent>
 
             <CardFooter className="p-4 border-t bg-muted/10">
-              {/* 
-                Placeholder for Chat Message Input (Task 4).
-                This area will eventually contain the message input field and send button.
-              */}
-              <div className="w-full flex items-center gap-2">
-                <div className="flex-1 h-10 rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground flex items-center cursor-not-allowed opacity-50">
-                  Type your message...
-                </div>
-                <Button size="icon" disabled className="shrink-0">
-                  <Send className="h-4 w-4" />
-                  <span className="sr-only">Send message</span>
-                </Button>
-              </div>
+              <ChatInput
+                value={input}
+                onChange={setInput}
+                onSend={handleSend}
+                disabled={!apiKey}
+                placeholder={!apiKey ? "Please set your API key first..." : "Type your message..."}
+              />
             </CardFooter>
           </Card>
         </DialogContent>
