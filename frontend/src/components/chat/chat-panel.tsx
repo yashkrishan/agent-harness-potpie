@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, AlertCircle } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -19,6 +19,18 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChatInput } from './chat-input';
 import { ApiKeyForm } from './api-key-form';
+import { MessageList } from './message-list';
+import { ChatMessage } from '@/src/types/chat';
+
+interface ChatPanelProps {
+  messages: ChatMessage[];
+  isSending: boolean;
+  isSessionLoading: boolean;
+  onSendMessage: (content: string) => void;
+  apiKey: string | null;
+  onApiKeySubmit: (apiKey: string) => void;
+  error: Error | null;
+}
 
 /**
  * ChatPanel is the main container for the chatbot interface.
@@ -26,18 +38,24 @@ import { ApiKeyForm } from './api-key-form';
  * The panel is triggered by a floating action button and contains the message list
  * and input area within a Card-styled layout.
  * 
- * This component follows the layout requirements of Task 2, providing a structured
- * container for subsequent integration of message history and input logic.
+ * This component has been refactored to accept props from a parent controller
+ * (LocalChatWidget) which manages the chat session and message state.
  */
-export function ChatPanel() {
+export function ChatPanel({
+  messages,
+  isSending,
+  isSessionLoading,
+  onSendMessage,
+  apiKey,
+  onApiKeySubmit,
+  error
+}: ChatPanelProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [apiKey, setApiKey] = useState<string | null>(null);
   const [input, setInput] = useState('');
 
   const handleSend = () => {
-    if (!input.trim()) return;
-    // Logic for sending messages will be implemented in Task 4
-    console.log('Sending message:', input);
+    if (!input.trim() || isSending) return;
+    onSendMessage(input);
     setInput('');
   };
 
@@ -70,28 +88,34 @@ export function ChatPanel() {
             <CardContent className="flex-1 p-0 overflow-hidden bg-background">
               <ScrollArea className="h-full">
                 <div className="flex flex-col gap-4 p-4">
-                  {!apiKey ? (
+                  {error && (
+                    <div className="flex items-start gap-2 p-3 text-xs bg-destructive/10 text-destructive rounded-md border border-destructive/20 mb-2">
+                      <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                      <p>{error.message}</p>
+                    </div>
+                  )}
+                  
+                  {isSessionLoading ? (
+                    <div className="space-y-6 py-4">
+                      <div className="flex gap-3">
+                        <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
+                        <div className="h-16 w-3/4 bg-muted animate-pulse rounded-2xl rounded-tl-none" />
+                      </div>
+                      <div className="flex gap-3 flex-row-reverse">
+                        <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
+                        <div className="h-12 w-1/2 bg-muted animate-pulse rounded-2xl rounded-tr-none" />
+                      </div>
+                      <div className="flex gap-3">
+                        <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
+                        <div className="h-20 w-2/3 bg-muted animate-pulse rounded-2xl rounded-tl-none" />
+                      </div>
+                    </div>
+                  ) : !apiKey ? (
                     <div className="py-8">
-                      <ApiKeyForm onSubmit={setApiKey} />
+                      <ApiKeyForm onSubmit={onApiKeySubmit} />
                     </div>
                   ) : (
-                    <>
-                      {/* 
-                        Placeholder for Chat Message List (Task 5).
-                        This area will eventually render the conversation history.
-                      */}
-                      <div className="flex flex-col items-center justify-center min-h-[400px] text-center space-y-4 py-10">
-                        <div className="p-4 rounded-full bg-muted/50">
-                          <MessageSquare className="h-8 w-8 text-muted-foreground/50" />
-                        </div>
-                        <div className="space-y-2">
-                          <p className="text-sm font-semibold">How can I help you today?</p>
-                          <p className="text-xs text-muted-foreground max-w-[240px] leading-relaxed mx-auto">
-                            I can help you navigate the workflow, explain project details, or perform actions based on your current page.
-                          </p>
-                        </div>
-                      </div>
-                    </>
+                    <MessageList messages={messages} isSending={isSending} />
                   )}
                 </div>
               </ScrollArea>
@@ -102,7 +126,7 @@ export function ChatPanel() {
                 value={input}
                 onChange={setInput}
                 onSend={handleSend}
-                disabled={!apiKey}
+                disabled={!apiKey || isSending}
                 placeholder={!apiKey ? "Please set your API key first..." : "Type your message..."}
               />
             </CardFooter>

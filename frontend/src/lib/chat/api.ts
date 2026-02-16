@@ -95,3 +95,19 @@ export async function deleteChatSession(sessionId: string): Promise<void> {
     throw new Error(errorData.detail || `Failed to delete chat session: ${response.statusText}`);
   }
 }
+
+/**
+ * Set the Anthropic API key in the backend secret manager.
+ */
+export async function setBackendApiKey(apiKey: string): Promise<void> {
+  const response = await fetch(`${API_BASE}/api/v1/chat/config/api-key`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ api_key: apiKey }),
+  });
+  
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || `Failed to set API key: ${response.statusText}`);
+  }
+}
