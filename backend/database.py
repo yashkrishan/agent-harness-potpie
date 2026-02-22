@@ -30,6 +30,10 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
 
+# Import all models to register them with Base.metadata
+from backend.models import User
+
+
 class Project(Base):
     __tablename__ = "projects"
     
@@ -82,50 +86,13 @@ class SystemDesign(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     project_id = Column(Integer, nullable=False)
-    phase_id = Column(Integer, nullable=False)
     architecture = Column(Text, nullable=True)
-    sequence_diagram = Column(Text, nullable=True)
-    api_structure = Column(JSON, nullable=True)
-    db_changes = Column(JSON, nullable=True)
-    data_flow = Column(Text, nullable=True)
-    approved = Column(Boolean, default=False)
+    tech_stack = Column(JSON, nullable=True)
+    database_schema = Column(Text, nullable=True)
+    api_design = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-class ExecutionLog(Base):
-    __tablename__ = "execution_logs"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    project_id = Column(Integer, nullable=False)
-    task_id = Column(Integer, nullable=False)
-    log_type = Column(String, nullable=False)  # agent_message, code_change, error, test_result
-    content = Column(Text, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-class PR(Base):
-    __tablename__ = "prs"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    project_id = Column(Integer, nullable=False)
-    branch_name = Column(String, nullable=False)
-    pr_url = Column(String, nullable=True)
-    pr_number = Column(Integer, nullable=True)
-    status = Column(String, default="pending")  # pending, created, merged
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-# Create tables lazily (only when needed, not at import time)
-_tables_created = False
-
-def init_db():
-    """Initialize database tables. Call this on app startup."""
-    global _tables_created
-    if not _tables_created:
-        try:
-            Base.metadata.create_all(bind=engine)
-            _tables_created = True
-        except Exception as e:
-            # Log error but don't fail if tables already exist
-            import logging
-            logging.warning(f"Database initialization warning: {e}")
 
 def get_db():
     db = SessionLocal()
@@ -133,3 +100,8 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def init_db():
+    """Initialize database tables."""
+    Base.metadata.create_all(bind=engine)
