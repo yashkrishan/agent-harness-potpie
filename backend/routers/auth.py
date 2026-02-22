@@ -19,6 +19,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
+
 from backend.database import SessionLocal, engine
 from backend.core.pkce import generate_code_verifier, generate_code_challenge, generate_state
 from backend.models.oauth_state import OAuthState
@@ -167,3 +168,103 @@ async def initiate_github_oauth(
     
     # Return redirect response
     return RedirectResponse(url=github_auth_url, status_code=302)
+
+
+@router.post("/logout")
+async def logout(
+    request: Request,
+    response: Response,
+    db: Session = Depends(get_db)
+):
+    """
+    Logout user by invalidating session in database and clearing session cookie.
+    
+    This endpoint:
+    1. Extracts JWT token from HTTP-only cookie
+    2. Validates the JWT token
+    3. Marks the session as revoked in the database
+    4. Clears the session cookie
+    
+    Returns:
+        200 Successfully logged out
+        401 No active session or invalid token
+    """
+    from backend.core.jwt import validate_token
+    from backend.models.session import Session as SessionModel
+    
+    client_ip = get_client_ip(request)
+    
+    # Rate limiting: 30 requests per minute, burst 50
+    if not check_rate_limit(client_ip, limit=30, window_seconds=60):
+        raise HTTPException(
+            status_code=429,
+            detail="Rate limit exceeded. Please try again later."
+        )
+    
+    # Get the session cookie
+    session_cookie_name = "session"
+    token = request.cookies.get(session_cookie_name)
+    
+    if not token:
+        # No session cookie - already logged out
+        response.delete_cookie(
+            key=session_cookie_name,
+            path="/",
+            httponly=True,
+            secure=True,
+            samesite="lax"
+        )
+        return {"message": "Successfully logged out"}
+    
+    # Validate the JWT token
+    try:
+        payload = validate_token(token)
+    except Exception:
+        # Invalid token - clear cookie and return success
+        response.delete_cookie(
+            key=session_cookie_name,
+            path="/",
+            httponly=True,
+            secure=True,
+            samesite="lax"
+        )
+        return {"message": "Successfully logged out"}
+    
+    # Get the session JTI (JWT ID) from the token
+    jti = payload.get("jti")
+    user_id = payload.get("user_id")
+    
+    if not jti or not user_id:
+        # Invalid token payload - clear cookie
+        response.delete_cookie(
+            key=session_cookie_name,
+            path="/",
+            httponly=True,
+            secure=True,
+            samesite="lax"
+        )
+        return {"message": "Successfully logged out"}
+    
+    # Invalidate the session in the database
+    session = db.query(SessionModel).filter(
+        SessionModel.id == jti,
+        SessionModel.user_id == user_id,
+        SessionModel.is_revoked == False
+    ).first()
+    
+    if session:
+        session.is_revoked = True
+        session.revoked_at = datetime.utcnow()
+        session.revoked_reason = "user_logout"
+        db.commit()
+    
+    # Clear the session cookie
+    response.delete_cookie(
+        key=session_cookie_name,
+        path="/",
+        httponly=True,
+        secure=True,
+        samesite="lax"
+    )
+    
+    return {"message": "Successfully logged out"}
