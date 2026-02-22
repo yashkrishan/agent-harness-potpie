@@ -32,76 +32,10 @@ Base = declarative_base()
 
 # Import all models to register them with Base.metadata
 from backend.models import User
+from backend.models.oauth_state import OAuthState
 
 
 class Project(Base):
     __tablename__ = "projects"
     
     id = Column(Integer, primary_key=True, index=True)
-    idea = Column(Text, nullable=False)
-    repo_url = Column(String, nullable=True)
-    repo_path = Column(String, nullable=True)
-    status = Column(String, default="idea")  # idea, repo_selected, plan_generated, tasks_generated, design_approved, executing, testing, pr_created
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-class Plan(Base):
-    __tablename__ = "plans"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    project_id = Column(Integer, nullable=False)
-    questions = Column(JSON, nullable=True)
-    answers = Column(JSON, nullable=True)
-    plan_document = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-class Phase(Base):
-    __tablename__ = "phases"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    project_id = Column(Integer, nullable=False)
-    phase_number = Column(Integer, nullable=False)
-    name = Column(String, nullable=False)
-    description = Column(Text, nullable=True)
-    status = Column(String, default="pending")  # pending, in_progress, completed, failed
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-class Task(Base):
-    __tablename__ = "tasks"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    project_id = Column(Integer, nullable=False)
-    phase_id = Column(Integer, nullable=False)
-    task_number = Column(Integer, nullable=False)
-    name = Column(String, nullable=False)
-    description = Column(Text, nullable=True)
-    file_path = Column(String, nullable=True)
-    status = Column(String, default="pending")  # pending, in_progress, completed, failed
-    code_changes = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-class SystemDesign(Base):
-    __tablename__ = "system_designs"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    project_id = Column(Integer, nullable=False)
-    architecture = Column(Text, nullable=True)
-    tech_stack = Column(JSON, nullable=True)
-    database_schema = Column(Text, nullable=True)
-    api_design = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-def init_db():
-    """Initialize database tables."""
-    Base.metadata.create_all(bind=engine)
