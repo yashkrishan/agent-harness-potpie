@@ -4,7 +4,7 @@ This module implements the OAuth 2.0 authorization code flow with PKCE
 (Proof Key for Code Exchange) for secure GitHub authentication.
 
 Endpoints:
-- GET /api/v1/auth/github - Initiate OAuth flow (this task)
+- GET /api/v1/auth/github - Initiate OAuth flow
 - GET /api/v1/auth/github/callback - Handle OAuth callback
 - POST /api/v1/auth/logout - Logout user
 - GET /api/v1/auth/me - Get current user
@@ -24,6 +24,8 @@ from backend.database import SessionLocal, engine
 from backend.core.pkce import generate_code_verifier, generate_code_challenge, generate_state
 from backend.models.oauth_state import OAuthState
 from backend.models.config import AuthConfig
+from backend.middleware.auth import get_current_user
+from backend.models.user import User
 
 
 # Create router
@@ -58,24 +60,24 @@ def get_client_ip(request: Request) -> str:
 
 
 # Simple in-memory rate limiting (for production, use Redis)
-_rate_limit_storage: dict = {}
+_rate_limit_storage: dict[str, list[float]] = {}
 
 
-def check_rate_limit(client_ip: str, limit: int, window_seconds: int) -> bool:
-    """
-    Check if client has exceeded rate limit.
+def check_rate_limit(key: str, limit: int, window_seconds: int = 60) -> bool:
+    """Check if request is within rate limit.
     
     Args:
-        client_ip: Client IP address
-        limit: Maximum requests allowed in the window
+        key: Unique identifier for rate limit (e.g., IP address)
+        limit: Maximum number of requests allowed in window
         window_seconds: Time window in seconds
-    
+        
     Returns:
         True if within limit, False if exceeded
     """
-    now = datetime.utcnow()
-    key = f"{client_ip}"
+    from datetime import datetime as dt
+    now = dt.now()
     
+    # Initialize if not exists
     if key not in _rate_limit_storage:
         _rate_limit_storage[key] = []
     
@@ -103,18 +105,8 @@ async def initiate_github_oauth(
     """
     Initiate GitHub OAuth 2.0 authorization code flow with PKCE.
     
-    This endpoint:
-    1. Validates rate limits (10 requests/minute per IP, burst 20)
-    2. Validates that auth configuration exists
-    3. Generates cryptographically secure state and code_verifier
-    4. Creates code_challenge from code_verifier using S256 method
-    5. Stores OAuthState in database with expiration
-    6. Redirects to GitHub authorization URL
-    
-    Returns:
-        302 Redirect to GitHub authorization URL
-        400 Bad Request if configuration is missing
-        429 Rate limit exceeded
+    Generates a secure state parameter and PKCE code_verifier, stores them
+    in the database, and redirects the user to GitHub's authorization URL.
     """
     client_ip = get_client_ip(request)
     
@@ -138,24 +130,21 @@ async def initiate_github_oauth(
     code_challenge = generate_code_challenge(code_verifier)
     state = generate_state(length=32)
     
-    # Build redirect URI
-    redirect_uri = config.github_redirect_uri
-    
     # Store OAuth state in database
     oauth_state = OAuthState(
         state=state,
         code_verifier=code_verifier,
-        redirect_uri=redirect_uri,
-        expires_in_minutes=10
+        redirect_uri=str(request.url_for("github_oauth_callback")),
+        expires_at=datetime.utcnow() + timedelta(minutes=10)
     )
     db.add(oauth_state)
     db.commit()
     
-    # Build GitHub authorization URL
+    # Build authorization URL
     auth_params = {
         "client_id": config.github_client_id,
-        "redirect_uri": redirect_uri,
-        "scope": "user:email read:user",
+        "redirect_uri": str(request.url_for("github_oauth_callback")),
+        "scope": "read:user user:email",
         "state": state,
         "code_challenge": code_challenge,
         "code_challenge_method": "S256"
@@ -178,18 +167,8 @@ async def logout(
 ):
     """
     Logout user by invalidating session in database and clearing session cookie.
-    
-    This endpoint:
-    1. Extracts JWT token from HTTP-only cookie
-    2. Validates the JWT token
-    3. Marks the session as revoked in the database
-    4. Clears the session cookie
-    
-    Returns:
-        200 Successfully logged out
-        401 No active session or invalid token
     """
-    from backend.core.jwt import validate_token
+    from backend.middleware.auth import decode_jwt_token
     from backend.models.session import Session as SessionModel
     
     client_ip = get_client_ip(request)
@@ -218,24 +197,11 @@ async def logout(
     
     # Validate the JWT token
     try:
-        payload = validate_token(token)
-    except Exception:
-        # Invalid token - clear cookie and return success
-        response.delete_cookie(
-            key=session_cookie_name,
-            path="/",
-            httponly=True,
-            secure=True,
-            samesite="lax"
-        )
-        return {"message": "Successfully logged out"}
-    
-    # Get the session JTI (JWT ID) from the token
-    jti = payload.get("jti")
-    user_id = payload.get("user_id")
-    
-    if not jti or not user_id:
-        # Invalid token payload - clear cookie
+        payload = decode_jwt_token(token)
+        user_id = payload.get("user_id")
+        jti = payload.get("jti")
+    except HTTPException:
+        # Invalid token - just clear cookie and return
         response.delete_cookie(
             key=session_cookie_name,
             path="/",
@@ -268,3 +234,32 @@ async def logout(
     )
     
     return {"message": "Successfully logged out"}
+
+
+@router.get("/me")
+async def get_current_user_info(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Get current authenticated user information.
+    
+    Returns the current user's data including id, github_username, and email.
+    Requires a valid JWT session token in the cookie.
+    """
+    client_ip = get_client_ip(request)
+    
+    # Rate limiting: 60 requests per minute, burst 100
+    if not check_rate_limit(client_ip, limit=60, window_seconds=60):
+        raise HTTPException(
+            status_code=429,
+            detail="Rate limit exceeded. Please try again later."
+        )
+    
+    # Return user data
+    return {
+        "id": str(current_user.id),
+        "github_username": current_user.github_username,
+        "email": current_user.email
+    }
