@@ -33,9 +33,8 @@ Base = declarative_base()
 # Import all models to register them with Base.metadata
 from backend.models import User
 from backend.models.oauth_state import OAuthState
+from backend.models.config import AuthConfig
 
 
 class Project(Base):
     __tablename__ = "projects"
-    
-    id = Column(Integer, primary_key=True, index=True)
